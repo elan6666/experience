@@ -1,0 +1,10 @@
+{
+  "version": "v2-fusion-gate-v1",
+  "status": "GATE_ONLY_B3_NOT_IMPLEMENTED",
+  "selection_partition": "VALIDATION_2025",
+  "minimum_v1_pass_models": 2,
+  "maximum_error_correlation": null,
+  "maximum_holding_overlap": null,
+  "when_gate_fails": "NOT_RUN",
+  "test_or_viewed_2026_selection_allowed": false
+}

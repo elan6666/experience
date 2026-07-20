@@ -1,0 +1,11 @@
+{
+  "schema_version": "d0_universe_v1",
+  "universe": "STAR50",
+  "mode": "HISTORICAL_DYNAMIC",
+  "index_code": "000688.SH",
+  "membership_endpoint": "index_weight",
+  "benchmark_endpoint": "index_daily",
+  "formal_status": "BLOCKED_UNLESS_HISTORY_COMPLETE",
+  "latest_member_backfill": false
+}
+

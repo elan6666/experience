@@ -1,0 +1,14 @@
+{
+  "schema_version": "d0_feature_catalog_v1",
+  "implementation": "a_share_research.features.schema:d0_features",
+  "information_sets": {
+    "A0": ["CORE"],
+    "A1": ["CORE", "F"],
+    "A2": ["CORE", "S"],
+    "A3": ["CORE", "F", "S"]
+  },
+  "missing_policy": "Retain null and one independent missing flag per feature; fit transforms inside training folds only.",
+  "financial_date_only_policy": "No earlier than next trading day after ann_date/f_ann_date.",
+  "valuation_policy": "Daily-basic source trade date is shifted conservatively to the next trading day when no exact timestamp exists.",
+  "market_state_policy": "Build once from historical PIT CSI300 membership and reuse the same hash for all models/universes."
+}

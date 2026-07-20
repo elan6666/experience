@@ -1,0 +1,95 @@
+{
+  "schema_version": "d0_source_v1",
+  "approved_client": "../scripts/tushare_proxy_client.py:get_pro",
+  "transport_notice": "Tutorial-compatible provider proxy uses plain HTTP; credential remains server-only.",
+  "minimum_interval_seconds": 0.5,
+  "max_attempts": 3,
+  "retry_base_seconds": 2.0,
+  "existing_candidates": {
+    "historical_csi300": "data/processed/historical_csi300",
+    "historical_star50": "data/processed/historical_star50",
+    "tech32": "data/processed/tech32_open_to_open_v2",
+    "tech100": "data/processed/tech100"
+  },
+  "required_endpoints": [
+    "trade_cal",
+    "stock_basic",
+    "index_weight",
+    "index_daily",
+    "daily",
+    "daily_basic",
+    "adj_factor",
+    "stk_limit",
+    "suspend_d",
+    "namechange",
+    "fina_indicator"
+  ],
+  "bounded_requests": [
+    {
+      "endpoint": "trade_cal",
+      "params": {"exchange": "SSE", "start_date": "20190101", "end_date": "20260717"},
+      "fields": ["exchange", "cal_date", "is_open", "pretrade_date"],
+      "partition_key": "historical_csi300:calendar_2019_20260717",
+      "min_row_count": 1000
+    },
+    {
+      "endpoint": "stock_basic",
+      "params": {"exchange": "SSE", "list_status": "L"},
+      "fields": ["ts_code", "symbol", "name", "area", "industry", "market", "list_date", "delist_date"],
+      "partition_key": "market_all:stock_basic_SSE_L",
+      "min_row_count": 1000
+    },
+    {
+      "endpoint": "stock_basic",
+      "params": {"exchange": "SZSE", "list_status": "L"},
+      "fields": ["ts_code", "symbol", "name", "area", "industry", "market", "list_date", "delist_date"],
+      "partition_key": "market_all:stock_basic_SZSE_L",
+      "min_row_count": 1000
+    },
+    {
+      "endpoint": "stock_basic",
+      "params": {"exchange": "BSE", "list_status": "L"},
+      "fields": ["ts_code", "symbol", "name", "area", "industry", "market", "list_date", "delist_date"],
+      "partition_key": "market_all:stock_basic_BSE_L",
+      "min_row_count": 100
+    },
+    {
+      "endpoint": "stock_basic",
+      "params": {"exchange": "SSE", "list_status": "D"},
+      "fields": ["ts_code", "symbol", "name", "area", "industry", "market", "list_date", "delist_date"],
+      "partition_key": "market_all:stock_basic_SSE_D",
+      "min_row_count": 50
+    },
+    {
+      "endpoint": "stock_basic",
+      "params": {"exchange": "SZSE", "list_status": "D"},
+      "fields": ["ts_code", "symbol", "name", "area", "industry", "market", "list_date", "delist_date"],
+      "partition_key": "market_all:stock_basic_SZSE_D",
+      "min_row_count": 50
+    },
+    {
+      "endpoint": "stock_basic",
+      "params": {"exchange": "BSE", "list_status": "D"},
+      "fields": ["ts_code", "symbol", "name", "area", "industry", "market", "list_date", "delist_date"],
+      "partition_key": "market_all:stock_basic_BSE_D",
+      "min_row_count": 1
+    },
+    {
+      "endpoint": "index_weight",
+      "params": {"index_code": "000300.SH", "start_date": "20190101", "end_date": "20191231"},
+      "fields": ["index_code", "con_code", "trade_date", "weight"],
+      "partition_key": "historical_csi300:index_weight_2019_smoke",
+      "min_row_count": 100
+    },
+    {
+      "endpoint": "index_weight",
+      "params": {"index_code": "000688.SH", "start_date": "20200101", "end_date": "20201231"},
+      "fields": ["index_code", "con_code", "trade_date", "weight"],
+      "partition_key": "historical_star50:index_weight_2020_smoke",
+      "min_row_count": 50
+    }
+  ],
+  "full_request_policy": "Generate bounded year/month/day partitions on server after inventory audit; never issue an unbounded endpoint call.",
+  "immutable_raw_root": "data/raw/d0_v1",
+  "checkpoint": "data/checkpoints/d0_v1.json"
+}

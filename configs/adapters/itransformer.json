@@ -1,0 +1,16 @@
+{
+  "schema_version": "deep_model_adapter_v1",
+  "model": "itransformer",
+  "upstream_commit": "c2426e68ca13f74aaec08045c5c724d8ad328124",
+  "adapter": "a_share_research.adapters.itransformer:ITransformerAdapter",
+  "status": "READY_FOR_SERVER_A_SHARE_SMOKE",
+  "native_semantics": {
+    "loss": "MSELoss",
+    "optimizer": "Adam",
+    "scheduler": "upstream adjust_learning_rate",
+    "checkpoint": "best validation MSE",
+    "test_visibility_during_fit": false
+  },
+  "fidelity_label": "official backbone + protocol-safe runner + A-share input adaptation"
+}
+

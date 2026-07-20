@@ -1,0 +1,326 @@
+schema_version: 1
+audited_at_utc: "2026-07-19T07:20:00Z"
+audit_method:
+  source_audit: >-
+    Official paper/repository links, repository root licenses and remote HEAD refs were
+    checked from the Mac on 2026-07-19. This is source provenance only, not server smoke.
+  commit_reachability: >-
+    Schema-v2 detached checkout integrity, environment resolution and GPU smoke were
+    executed on the approved server. The current remote-HEAD refresh is retained as
+    UPSTREAM_FAIL because GitHub queries timed out after iTransformer; no stale receipt
+    is promoted to a current pass.
+  license_rule: >-
+    A public repository without an explicit repository-level license is NOASSERTION and
+    BLOCKED_LICENSE for copying, modification, patching, or redistribution until the
+    copyright holder grants permission. A license in a vendored subdirectory does not
+    license the surrounding repository.
+  official_source_rule: >-
+    A repository is called official only when the paper/proceedings page or the authors'
+    repository identifies it as the implementation. Third-party ports are excluded.
+
+baselines:
+  ridge:
+    kind: "algorithm_baseline"
+    implementation: "sklearn.linear_model.Ridge"
+    package: "scikit-learn==1.9.0"
+    package_url: "https://pypi.org/project/scikit-learn/1.9.0/"
+    source_url: "https://github.com/scikit-learn/scikit-learn"
+    documentation_url: "https://scikit-learn.org/1.9/modules/generated/sklearn.linear_model.Ridge.html"
+    license_spdx: "BSD-3-Clause"
+    provenance_status: "READY"
+    execution_device: "cpu"
+    native_semantics:
+      input: "2-D tabular matrix (samples, features)"
+      output: "continuous regression prediction"
+      objective: "squared error plus L2 coefficient penalty"
+      optimizer: "closed-form or iterative solver selected by solver='auto'"
+      scheduler: "none"
+      inference: "estimator.predict(X)"
+    project_boundary: >-
+      Project baseline, not a paper reproduction. All preprocessing is fit on the
+      training fold only and frozen before validation/test inference.
+
+  lightgbm:
+    kind: "algorithm_baseline"
+    implementation: "lightgbm.LGBMRegressor"
+    package: "lightgbm==4.7.0"
+    package_url: "https://pypi.org/project/lightgbm/4.7.0/"
+    source_url: "https://github.com/microsoft/LightGBM"
+    documentation_url: "https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMRegressor.html"
+    license_spdx: "MIT"
+    provenance_status: "READY"
+    execution_device: "cpu"
+    native_semantics:
+      input: "2-D tabular matrix (samples, features)"
+      output: "continuous regression prediction"
+      objective: "regression (L2) unless a versioned project config states otherwise"
+      optimizer: "gradient-boosted decision trees"
+      scheduler: "none; boosting rounds are fixed by versioned project configuration"
+      inference: >-
+        configured n_estimators unless an explicit versioned validation callback enables
+        early stopping, in which case the frozen best_iteration_ is used
+    project_boundary: >-
+      Project baseline, not a paper reproduction. Version 4.7.0 was the current PyPI
+      release on the audit date and must be installed from a locked artifact on server.
+
+upstreams:
+  itransformer:
+    display_name: "iTransformer"
+    venue: "ICLR 2024 Spotlight"
+    paper_title: "iTransformer: Inverted Transformers Are Effective for Time Series Forecasting"
+    paper_url: "https://proceedings.iclr.cc/paper_files/paper/2024/hash/2ea18fdc667e0ef2ad82b2b4d65147ad-Abstract-Conference.html"
+    repository_url: "https://github.com/thuml/iTransformer.git"
+    repository_web_url: "https://github.com/thuml/iTransformer"
+    commit: "c2426e68ca13f74aaec08045c5c724d8ad328124"
+    commit_url: "https://github.com/thuml/iTransformer/commit/c2426e68ca13f74aaec08045c5c724d8ad328124"
+    default_branch: "main"
+    commit_observed_as_head: true
+    license_spdx: "MIT"
+    license_status: "MIT_CLEAR"
+    license_review_required: false
+    license_url: "https://github.com/thuml/iTransformer/blob/c2426e68ca13f74aaec08045c5c724d8ad328124/LICENSE"
+    provenance_status: "READY_FOR_SERVER_SMOKE"
+    official_entrypoint: "run.py"
+    official_example: "bash scripts/multivariate_forecasting/ETT/iTransformer_ETTh1.sh"
+    original_environment:
+      python: "not pinned by upstream"
+      torch: "2.0.0"
+      numpy: "1.23.5"
+      pandas: "1.5.3"
+      scikit_learn: "1.2.2"
+    native_semantics:
+      architecture: "encoder-only Transformer over inverted variate tokens"
+      input: "x_enc shaped (batch, lookback, variates), optional timestamp tokens"
+      output: "point forecast shaped (batch, horizon, variates)"
+      loss: "MSELoss"
+      optimizer: "Adam"
+      scheduler: "upstream adjust_learning_rate; scripts select lradj"
+      early_stopping: "validation MSE, upstream patience default 3"
+      inference: "best validation checkpoint, deterministic point forecast"
+    fidelity_notes:
+      - "Official trainer computes and prints test loss every epoch."
+      - "Formal A-share runs must hide test data from that loop in an external runner."
+      - "Architecture, MSE, Adam, scheduler, and forward inference remain unchanged."
+
+  fact:
+    display_name: "FACT"
+    venue: "ICLR 2026 Poster"
+    paper_title: "FACT: Fine-grained Across-variable Convolution for Multivariate Time Series Forecasting"
+    paper_url: "https://iclr.cc/virtual/2026/poster/10007914"
+    openreview_url: "https://openreview.net/forum?id=j3gNYqrHtl"
+    repository_url: "https://github.com/wanghq21/FACT.git"
+    repository_web_url: "https://github.com/wanghq21/FACT"
+    commit: "aa825721d1a0a6032b2f8bcccc6e0f7b14884ae4"
+    commit_url: "https://github.com/wanghq21/FACT/commit/aa825721d1a0a6032b2f8bcccc6e0f7b14884ae4"
+    default_branch: "main"
+    commit_observed_as_head: true
+    license_spdx: "MIT"
+    license_status: "MIT_WITH_ATTRIBUTION_AMBIGUITY"
+    license_review_required: true
+    license_url: "https://github.com/wanghq21/FACT/blob/aa825721d1a0a6032b2f8bcccc6e0f7b14884ae4/LICENSE"
+    provenance_status: "READY_FOR_SERVER_SMOKE_REVIEW_REQUIRED"
+    official_entrypoint: "run.py"
+    official_example: "bash FACT.sh"
+    original_environment:
+      python: "3.8 (README)"
+      torch: "1.7.1"
+      numpy: "1.23.5"
+      pandas: "1.5.3"
+      scikit_learn: "1.2.2"
+    native_semantics:
+      architecture: "time/frequency fine-grained across-variable depth-wise 2-D convolution"
+      input: "x_enc shaped (batch, lookback, ordered variates), optional time marks"
+      output: "point forecast shaped (batch, horizon, variates)"
+      loss: "MSELoss"
+      optimizer: "Adam"
+      scheduler: "upstream adjust_learning_rate; default lradj type1"
+      early_stopping: "validation MSE, upstream patience default 3"
+      inference: "best validation checkpoint, deterministic point forecast"
+    fidelity_notes:
+      - "The 2-D remapping makes stable, predeclared variable ordering semantically material."
+      - "Official trainer computes and prints test loss every epoch."
+      - "Pinned model code repeats alpha == 1.0 in the frequency-only branch; core=0 is an upstream defect."
+      - "Use the official default mixed time/frequency core=0.5 for smoke; do not silently patch."
+
+  timepro:
+    display_name: "TimePro"
+    venue: "ICML 2025"
+    paper_title: "TimePro: Efficient Multivariate Long-term Time Series Forecasting with Variable- and Time-Aware Hyper-state"
+    paper_url: "https://proceedings.mlr.press/v267/ma25p.html"
+    openreview_url: "https://openreview.net/forum?id=s69Ei2VrIW"
+    repository_url: "https://github.com/xwmaxwma/TimePro.git"
+    repository_web_url: "https://github.com/xwmaxwma/TimePro"
+    commit: "70a20e5a257b30eb026ee4316293cf4feeb92a1f"
+    commit_url: "https://github.com/xwmaxwma/TimePro/commit/70a20e5a257b30eb026ee4316293cf4feeb92a1f"
+    default_branch: "main"
+    commit_observed_as_head: true
+    license_spdx: "NOASSERTION"
+    license_status: "NO_REPOSITORY_LICENSE"
+    license_review_required: true
+    license_url: null
+    license_authorization: >-
+      User-asserted author authorization recorded 2026-07-20. No repository-level
+      license file exists; clone/build/execute is permitted only as a documented
+      deviation pending formal written permission, not a license grant.
+    provenance_status: "READY_FOR_SERVER_SMOKE_REVIEW_REQUIRED"
+    official_entrypoint: "run.py"
+    official_example: "bash scripts/TimePro_ECL.sh"
+    original_environment:
+      python: "3.9 (README)"
+      torch: "2.0.0+cu117"
+      numpy: "1.22.4"
+      scikit_learn: "1.3.0"
+      compiled_extensions: ["selective_scan_cuda_oflex_rh", "DCNv4"]
+    native_semantics:
+      architecture: "Mamba-style variable- and time-aware hyper-state with deformable convolution"
+      input: "x_enc shaped (batch, lookback, variates)"
+      output: "point forecast shaped (batch, horizon, variates)"
+      loss: "MSELoss"
+      optimizer: "Adam"
+      scheduler: "upstream adjust_learning_rate; default lradj type1"
+      early_stopping: "validation MSE, upstream patience default 3"
+      inference: "best validation checkpoint, deterministic point forecast"
+    fidelity_notes:
+      - "Repository root has no LICENSE file or detected license on the audit date."
+      - "User-asserted author authorization recorded 2026-07-20 (see license_authorization); the no-license block is overridden as a documented deviation, not a license grant."
+      - "Official trainer computes and prints test loss every epoch."
+      - "Custom CUDA extensions require a server-only RTX 5090/CUDA compatibility smoke."
+
+  timexer:
+    display_name: "TimeXer"
+    venue: "NeurIPS 2024 Main Conference"
+    paper_title: "TimeXer: Empowering Transformers for Time Series Forecasting with Exogenous Variables"
+    paper_url: "https://proceedings.neurips.cc/paper_files/paper/2024/hash/0113ef4642264adc2e6924a3cbbdf532-Abstract-Conference.html"
+    repository_url: "https://github.com/thuml/TimeXer.git"
+    repository_web_url: "https://github.com/thuml/TimeXer"
+    commit: "76011909357972bd55a27adba2e1be994d81b327"
+    commit_url: "https://github.com/thuml/TimeXer/commit/76011909357972bd55a27adba2e1be994d81b327"
+    default_branch: "main"
+    commit_observed_as_head: true
+    license_spdx: "NOASSERTION"
+    license_status: "NO_REPOSITORY_LICENSE"
+    license_review_required: true
+    license_url: null
+    license_authorization: >-
+      User-asserted author authorization recorded 2026-07-20. No repository-level
+      license file exists; clone/build/execute is permitted only as a documented
+      deviation pending formal written permission, not a license grant.
+    provenance_status: "READY_FOR_SERVER_SMOKE_REVIEW_REQUIRED"
+    official_entrypoint: "run.py"
+    official_example: "bash scripts/forecast_exogenous/EPF/TimeXer.sh"
+    original_environment:
+      python: "not pinned by upstream"
+      torch: "2.0.0"
+      numpy: "1.23.5"
+      pandas: "1.5.3"
+      scikit_learn: "1.2.2"
+    native_semantics:
+      architecture: "patched endogenous Transformer with global-token cross-attention to exogenous variates"
+      input: >-
+        For the exogenous MS path, the last input column is the endogenous target and
+        preceding columns are exogenous series; lookback must be divisible by patch_len.
+      output: "point forecast for the endogenous target; M mode forecasts all variates"
+      loss: "MSELoss"
+      optimizer: "Adam"
+      scheduler: "upstream adjust_learning_rate; default lradj type1"
+      early_stopping: "validation MSE, upstream patience default 3"
+      inference: "best validation checkpoint, deterministic point forecast"
+    fidelity_notes:
+      - "Repository root has no LICENSE file or detected license on the audit date."
+      - "User-asserted author authorization recorded 2026-07-20 (see license_authorization); the no-license block is overridden as a documented deviation, not a license grant."
+      - "Official trainer computes and prints test loss every epoch."
+      - "A-share factor/state columns belong in the author exogenous path, not a rewritten embedding."
+
+  s4m:
+    display_name: "S4M"
+    venue: "ICLR 2025"
+    paper_title: "S4M: S4 for Multivariate Time Series Forecasting with Missing Values"
+    paper_url: "https://proceedings.iclr.cc/paper_files/paper/2025/hash/7b2f0758334389b8ad0665a9bd165463-Abstract-Conference.html"
+    openreview_url: "https://openreview.net/forum?id=BkftcwIVmR"
+    repository_url: "https://github.com/WINTERWEEL/S4M.git"
+    repository_web_url: "https://github.com/WINTERWEEL/S4M"
+    commit: "a718823addd3606e763dfc261174e0135b2535f4"
+    commit_url: "https://github.com/WINTERWEEL/S4M/commit/a718823addd3606e763dfc261174e0135b2535f4"
+    default_branch: "main"
+    commit_observed_as_head: true
+    license_spdx: "NOASSERTION"
+    license_status: "NO_REPOSITORY_LICENSE"
+    license_review_required: true
+    license_url: null
+    license_authorization: >-
+      User-asserted author authorization recorded 2026-07-20. No repository-level
+      license file exists; clone/build/execute is permitted only as a documented
+      deviation pending formal written permission, not a license grant.
+    provenance_status: "READY_FOR_SERVER_SMOKE_REVIEW_REQUIRED"
+    official_entrypoint: "s4m/run.py"
+    official_example: >-
+      python run.py --is_training 1 --root_path ./data/weather/chunk_missing/
+      --data_path weather_missing.csv --model S4M --data custom4 --features M
+      --seq_len 192 --pred_len 96 --train_epochs 15
+    original_environment:
+      python: "3.10.13"
+      torch: "2.1.0"
+      numpy: "1.26.4"
+      scikit_learn: "1.5.0"
+      experiment_tracking: "wandb==0.17.0"
+    native_semantics:
+      architecture: "Adaptive Temporal Prototype Mapper plus missing-aware dual-stream S4"
+      input: "values, observation mask, elapsed/extreme-value auxiliaries and memory-bank state"
+      output: "point forecast shaped (batch, horizon, variates)"
+      loss: "MSELoss evaluated only where target observation mask equals one"
+      optimizer: "SGD(momentum=0.9, weight_decay=1e-5)"
+      scheduler: "upstream adjust_learning_rate"
+      early_stopping: "validation masked MSE"
+      inference: "best validation checkpoint plus serialized memory-bank state"
+    fidelity_notes:
+      - "Repository root has no LICENSE; vendored S4 Apache-2.0 license does not license S4M code."
+      - "User-asserted author authorization recorded 2026-07-20 (see license_authorization); the no-license block is overridden as a documented deviation, not a license grant."
+      - "The repository includes generated __pycache__ files and hard-coded output paths."
+      - "The README example root_path does not match the committed weather file location."
+      - "A-share member/tradability masks stay external; only observation missingness enters S4M."
+
+server_gate:
+  receipt_schema_version: 2
+  execution_status: "PARTIAL_VERIFIED_LICENSE_OVERRIDE_PENDING_ADAPTER"
+  execution_status_reason: >-
+    Ridge and LightGBM passed schema-v2 baseline smokes; iTransformer passed checkout,
+    CUDA-12.8 compatibility smoke and integrity gates; FACT passed the same gates with
+    a license-attribution warning. Exact historical dependency stacks failed on Python
+    3.12 and are retained as ENV_FAIL. TimePro, TimeXer and S4M carry a user-asserted
+    author authorization (license_authorization) recorded 2026-07-20 as a documented
+    deviation; they are unblocked for checkout/smoke pending adapter implementation, not
+    a formal license grant. The current GitHub remote-HEAD refresh remains UPSTREAM_FAIL
+    due to timeouts.
+  checkout_root: "/data/yilangliu/a_share_research/upstream"
+  receipt_root: "/data/yilangliu/a_share_research/receipts/upstream_v2"
+  clone_policy: >-
+    clone only READY_FOR_SERVER_SMOKE or READY_FOR_SERVER_SMOKE_REVIEW_REQUIRED
+    entries at the exact commit; preserve review warnings
+  blocked_entries: []
+  review_entries: ["fact", "timepro", "timexer", "s4m"]
+  required_receipt_fields:
+    - "model"
+    - "commit"
+    - "license_status"
+    - "source_tree_hash_before"
+    - "source_tree_hash_after"
+    - "worktree_content_sha256_before"
+    - "worktree_content_sha256_after"
+    - "git_status_before"
+    - "git_status_after"
+    - "python_version"
+    - "torch_version"
+    - "cuda_version"
+    - "gpu_name"
+    - "cuda_visible_devices"
+    - "torch_current_device"
+    - "physical_gpu_requested"
+    - "physical_gpu_evidence"
+    - "environment_receipt_sha256"
+    - "resolved_lock_sha256"
+    - "sys_executable"
+    - "command"
+    - "output_shape"
+    - "status"
+    - "stage"
+    - "stderr_digest"

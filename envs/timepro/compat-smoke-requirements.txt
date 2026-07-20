@@ -1,0 +1,11 @@
+# Compatibility-only RTX 5090 import/shape smoke. Not the author environment.
+# Custom CUDA extensions selective_scan_cuda_oflex_rh and DCNv4 are built
+# server-side under builds/ with compute_90 PTX (JIT to sm_120 via the CUDA
+# 12.8 driver); see .byte-os/BUILD_LOG.md. They are editable-installed, not
+# declared here, and are captured by pip freeze in the resolved lock.
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.7.1+cu128
+torchvision==0.22.1+cu128
+numpy==2.2.6
+reformer-pytorch==1.4.4
+timm==0.6.13

@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seven-model-a-share-research"
+version = "0.1.0"
+description = "Auditable seven-model A-share research contracts and adapters"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary research use" }
+authors = [{ name = "A-share research team" }]
+dependencies = []
+
+[project.optional-dependencies]
+data = [
+  "openpyxl==3.1.5",
+  "tushare==1.4.24",
+]
+tabular = [
+  "lightgbm==4.7.0",
+  "numpy>=2.0,<3",
+  "scikit-learn==1.9.0",
+]
+dev = [
+  "pytest>=8.0,<9",
+  "PyYAML==6.0.2",
+  "ruff>=0.6,<1",
+]
+
+[project.scripts]
+a-share-research = "a_share_research.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/a_share_research"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers --strict-config"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]

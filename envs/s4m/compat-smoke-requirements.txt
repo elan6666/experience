@@ -1,0 +1,15 @@
+# Compatibility-only RTX 5090 import/shape smoke. Not the author environment.
+# S4M uses the naive Cauchy/Vandermonde SSM kernel fallback (no custom CUDA
+# extension needed).  The memory bank k-means warmup uses Bio.Cluster and
+# torch_kmeans; decay imputation replaces RevIN normalization.
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.7.1+cu128
+numpy==2.2.6
+einops==0.8.2
+biopython==1.87
+reformer-pytorch==1.4.4
+torch-kmeans==0.2.0
+pytorch-lightning==2.6.5
+matplotlib==3.11.1
+scipy
+scikit-learn

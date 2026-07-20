@@ -1,0 +1,36 @@
+{
+  "schema_version": "d0_schema_v1",
+  "primary_key": ["asof_date", "ts_code", "universe"],
+  "date_range": ["2019-01-01", "2026-07-17"],
+  "partitions": {
+    "train": ["2019-01-01", "2024-12-31"],
+    "validation": ["2025-01-01", "2025-12-31"],
+    "legacy_viewed": ["2026-01-01", "2026-07-17"]
+  },
+  "labels": {
+    "horizons": [1, 5, 20],
+    "entry": "next trading day open",
+    "return": "log(open[t+1+h] / open[t+1])",
+    "primary": "benchmark-relative 5-day",
+    "storage": "compact_label with external trading_calendar_hash and exact indices"
+  },
+  "materialization": {
+    "raw_admission": "exact request hashes from frozen request manifest only",
+    "signal_frequency": "last trading day of each ISO week after 20-day warmup",
+    "daily_sequence_table": "common/daily_market/<ts_code>.jsonl",
+    "restartability": "per-code market receipt plus per-universe annual signal shards"
+  },
+  "loader": "a_share_research.data.loaders:CanonicalDatasetLoader",
+  "forbidden_global_transforms": ["impute", "winsorize", "scale", "neutralize"],
+  "required_masks": [
+    "member",
+    "observed",
+    "feature_missing.*",
+    "label_available",
+    "buyable",
+    "sellable",
+    "loss",
+    "evaluation"
+  ],
+  "formal_thresholds": {"core_coverage": 0.995, "membership_coverage": 1.0}
+}

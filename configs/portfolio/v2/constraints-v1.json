@@ -1,0 +1,30 @@
+{
+  "version": "v2-constraints-v1",
+  "status": "LIMITS_REQUIRE_RESEARCH_FREEZE_BEFORE_RUN",
+  "input": "frozen_b1_target_frame",
+  "selection": "frozen_top_10_percent",
+  "max_single_weight": null,
+  "max_industry_weight": null,
+  "max_adv_participation": null,
+  "max_one_way_turnover": null,
+  "fallback": "PROPORTIONAL_CLIP_TO_CASH",
+  "execution_engine": "build_b0_ledger",
+  "execution_time": "trusted_T_plus_1_open",
+  "cost_schedule": "../costs-v1.json",
+  "exchange_restrictions": [
+    "LIMIT_UP",
+    "LIMIT_DOWN",
+    "SUSPENDED",
+    "ST_NOT_ELIGIBLE"
+  ],
+  "required_evidence": [
+    "input_target_hash",
+    "output_target_hash",
+    "constraint_decisions",
+    "target_and_executed_weights",
+    "cash",
+    "fills_and_rejects",
+    "cost",
+    "turnover"
+  ]
+}

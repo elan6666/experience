@@ -1,0 +1,10 @@
+{
+  "model": "Ridge",
+  "adapter": "a_share_research.models.tabular.ridge:RidgeAdapter",
+  "config_version": "ridge-v1",
+  "alpha": 1.0,
+  "fit_intercept": true,
+  "solver": "auto",
+  "seed": 20260719,
+  "selection_policy": "Frozen before legacy-viewed and future-unseen evaluation; no test-driven grid search."
+}

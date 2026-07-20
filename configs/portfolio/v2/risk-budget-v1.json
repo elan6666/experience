@@ -1,0 +1,23 @@
+{
+  "version": "v2-risk-budget-v1",
+  "status": "CALIBRATION_REQUIRED_BEFORE_RUN",
+  "source_universe": "CSI300",
+  "source_table": "shared_market_state",
+  "calibration_partition": "TRAIN_2019_2024_PLUS_VALIDATION_2025",
+  "viewed_2026_data_allowed": false,
+  "policy_market_state_hash_semantics": "Frozen calibration snapshot through 2025-12-31",
+  "schedule_market_state_hash_semantics": "CSI300 scoring table that may append prospective rows after policy freeze",
+  "allowed_equity_budgets": [1.0, 0.6, 0.3, 0.0],
+  "feature_weights": null,
+  "full_if_score_at_most": null,
+  "sixty_if_score_at_most": null,
+  "thirty_if_score_at_most": null,
+  "required_evidence": [
+    "calibration_market_state_hash",
+    "scoring_market_state_hash",
+    "calibration_data_hash",
+    "policy_hash",
+    "dated_schedule_hash"
+  ],
+  "invariant": "One dated schedule is reused byte-for-byte by all models and all four universes."
+}

@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.a-share-research/contracts-v1.json",
+  "title": "Canonical A-share contracts v1",
+  "oneOf": [
+    {"$ref": "#/$defs/pit_feature"},
+    {"$ref": "#/$defs/formal_feature_manifest"},
+    {"$ref": "#/$defs/label"},
+    {"$ref": "#/$defs/mask_bundle"},
+    {"$ref": "#/$defs/prediction_frame"},
+    {"$ref": "#/$defs/run_manifest"},
+    {"$ref": "#/$defs/portfolio_ledger"}
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "ts_code": {"type": "string", "pattern": "^[0-9]{6}\\.(SH|SZ|BJ)$"},
+    "date": {"type": "string", "format": "date"},
+    "datetime": {"type": "string", "format": "date-time"},
+    "pit_feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "asof_date", "ts_code", "feature_name", "feature_group", "value",
+        "source_date", "announce_time", "availability_time", "signal_cutoff_time",
+        "missing_flag", "source", "formal_eligible"
+      ],
+      "properties": {
+        "_schema": {"const": "pit_feature"},
+        "_version": {"const": "1.0"},
+        "asof_date": {"$ref": "#/$defs/date"},
+        "ts_code": {"$ref": "#/$defs/ts_code"},
+        "feature_name": {"type": "string", "minLength": 1},
+        "feature_group": {"enum": ["CORE", "FINANCIAL", "VALUATION", "MARKET_STATE"]},
+        "value": {"type": ["number", "null"]},
+        "source_date": {"$ref": "#/$defs/date"},
+        "announce_time": {"anyOf": [{"$ref": "#/$defs/datetime"}, {"type": "null"}]},
+        "availability_time": {"$ref": "#/$defs/datetime"},
+        "signal_cutoff_time": {"$ref": "#/$defs/datetime"},
+        "missing_flag": {"type": "boolean"},
+        "source": {"type": "string", "minLength": 1},
+        "formal_eligible": {"type": "boolean"}
+      }
+    },
+    "formal_feature_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "dataset_id", "d0_manifest_hash", "feature_eligibility"
+      ],
+      "properties": {
+        "_schema": {"const": "formal_feature_manifest"},
+        "_version": {"const": "1.0"},
+        "dataset_id": {"type": "string", "minLength": 1},
+        "d0_manifest_hash": {"$ref": "#/$defs/sha256"},
+        "feature_eligibility": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"type": "boolean"}
+        }
+      }
+    },
+    "label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "signal_date", "ts_code", "horizon", "entry_date",
+        "exit_date", "open_to_open_return", "benchmark_return", "trading_calendar",
+        "trading_calendar_hash"
+      ],
+      "properties": {
+        "_schema": {"const": "label"},
+        "_version": {"const": "1.0"},
+        "signal_date": {"$ref": "#/$defs/date"},
+        "ts_code": {"$ref": "#/$defs/ts_code"},
+        "horizon": {"enum": [1, 5, 20]},
+        "entry_date": {"$ref": "#/$defs/date"},
+        "exit_date": {"$ref": "#/$defs/date"},
+        "open_to_open_return": {"type": "number"},
+        "benchmark_return": {"type": "number"},
+        "trading_calendar": {"type": "array", "items": {"$ref": "#/$defs/date"}, "minItems": 3, "uniqueItems": true},
+        "trading_calendar_hash": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "mask_bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "signal_date", "asset_ids", "asset_registry_hash",
+        "member", "observed", "feature_missing", "label_available", "buyable",
+        "sellable", "loss", "evaluation"
+      ],
+      "properties": {
+        "_schema": {"const": "mask_bundle"},
+        "_version": {"const": "1.0"},
+        "signal_date": {"$ref": "#/$defs/date"},
+        "asset_ids": {"type": "array", "items": {"$ref": "#/$defs/ts_code"}, "minItems": 1, "uniqueItems": true},
+        "asset_registry_hash": {"$ref": "#/$defs/sha256"},
+        "member": {"$ref": "#/$defs/bool_array"},
+        "observed": {"$ref": "#/$defs/bool_array"},
+        "feature_missing": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/bool_array"}
+        },
+        "label_available": {"$ref": "#/$defs/bool_array"},
+        "buyable": {"$ref": "#/$defs/bool_array"},
+        "sellable": {"$ref": "#/$defs/bool_array"},
+        "loss": {"$ref": "#/$defs/bool_array"},
+        "evaluation": {"$ref": "#/$defs/bool_array"}
+      }
+    },
+    "bool_array": {"type": "array", "items": {"type": "boolean"}},
+    "prediction_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["_schema", "_version", "signal_date", "ts_code", "score", "coverage_state"],
+      "properties": {
+        "_schema": {"const": "prediction_record"},
+        "_version": {"const": "1.0"},
+        "signal_date": {"$ref": "#/$defs/date"},
+        "ts_code": {"$ref": "#/$defs/ts_code"},
+        "score": {"type": ["number", "null"]},
+        "coverage_state": {
+          "enum": ["SCORED", "NOT_MEMBER", "NOT_OBSERVED", "INSUFFICIENT_HISTORY", "MODEL_UNSUPPORTED"]
+        }
+      }
+    },
+    "prediction_frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["_schema", "_version", "run_id", "records"],
+      "properties": {
+        "_schema": {"const": "prediction_frame"},
+        "_version": {"const": "1.0"},
+        "run_id": {"type": "string", "minLength": 1},
+        "records": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/prediction_record"}}
+      }
+    },
+    "run_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "run_id", "model", "universe", "information_set",
+        "split", "purpose", "data_hash", "asset_registry_hash",
+        "execution_calendar_manifest_hash", "feature_schema_hash", "market_state_hash",
+        "config_hash", "code_hash", "upstream_commit", "seed", "status", "started_at",
+        "completed_at", "prediction_hash", "formal_feature_manifest_hash",
+        "protocol_open_receipt_hash", "deviations", "protocol_version"
+      ],
+      "properties": {
+        "_schema": {"const": "run_manifest"},
+        "_version": {"const": "1.0"},
+        "run_id": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "universe": {"enum": ["CSI300", "STAR50", "TECH32", "TECH100"]},
+        "information_set": {"enum": ["A0", "A1", "A2", "A3"]},
+        "split": {"enum": ["TRAIN", "VALIDATION", "LEGACY_VIEWED", "FUTURE_UNSEEN"]},
+        "purpose": {"enum": ["FIT", "SELECT", "LEGACY_REPORT", "FINAL_EVALUATION"]},
+        "data_hash": {"$ref": "#/$defs/sha256"},
+        "asset_registry_hash": {"$ref": "#/$defs/sha256"},
+        "execution_calendar_manifest_hash": {"$ref": "#/$defs/sha256"},
+        "feature_schema_hash": {"$ref": "#/$defs/sha256"},
+        "market_state_hash": {"$ref": "#/$defs/sha256"},
+        "config_hash": {"$ref": "#/$defs/sha256"},
+        "code_hash": {"$ref": "#/$defs/sha256"},
+        "upstream_commit": {"type": "string", "minLength": 1},
+        "seed": {"type": "integer"},
+        "status": {
+          "enum": ["PASS", "PASS_WITH_WARNING", "EXPLORATORY_ONLY", "BLOCKED", "INVALID_DATA", "INVALID_PROTOCOL", "ADAPTER_FAIL", "TRAIN_FAIL", "EVAL_FAIL", "VALID_NEGATIVE"]
+        },
+        "started_at": {"$ref": "#/$defs/datetime"},
+        "completed_at": {"anyOf": [{"$ref": "#/$defs/datetime"}, {"type": "null"}]},
+        "prediction_hash": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "formal_feature_manifest_hash": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "protocol_open_receipt_hash": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "deviations": {"type": "array", "items": {"type": "string"}},
+        "protocol_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "portfolio_ledger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "run_id", "initial_cash", "run_data_hash",
+        "asset_registry_hash", "eligibility_source_hash", "execution_calendar_manifest_hash",
+        "execution_calendar_receipts",
+        "eligibility_evidence", "cash", "fills", "holdings"
+      ],
+      "properties": {
+        "_schema": {"const": "portfolio_ledger"},
+        "_version": {"const": "1.0"},
+        "run_id": {"type": "string", "minLength": 1},
+        "initial_cash": {"type": "number", "minimum": 0},
+        "run_data_hash": {"$ref": "#/$defs/sha256"},
+        "asset_registry_hash": {"$ref": "#/$defs/sha256"},
+        "eligibility_source_hash": {"$ref": "#/$defs/sha256"},
+        "execution_calendar_manifest_hash": {"$ref": "#/$defs/sha256"},
+        "execution_calendar_receipts": {"type": "array", "items": {"$ref": "#/$defs/execution_calendar_receipt"}},
+        "eligibility_evidence": {"type": "array", "items": {"$ref": "#/$defs/eligibility_evidence"}},
+        "cash": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/cash_snapshot"}},
+        "fills": {"type": "array", "items": {"$ref": "#/$defs/portfolio_fill"}},
+        "holdings": {"type": "array", "items": {"$ref": "#/$defs/holding_snapshot"}}
+      }
+    },
+    "cash_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["_schema", "_version", "trade_date", "opening_cash", "closing_cash"],
+      "properties": {
+        "_schema": {"const": "cash_snapshot"},
+        "_version": {"const": "1.0"},
+        "trade_date": {"$ref": "#/$defs/date"},
+        "opening_cash": {"type": "number", "minimum": 0},
+        "closing_cash": {"type": "number", "minimum": 0}
+      }
+    },
+    "portfolio_fill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "trade_date", "ts_code", "side", "quantity", "price",
+        "commission", "tax", "slippage", "eligibility_evidence_id", "reject_reason"
+      ],
+      "properties": {
+        "_schema": {"const": "portfolio_fill"},
+        "_version": {"const": "1.0"},
+        "trade_date": {"$ref": "#/$defs/date"},
+        "ts_code": {"$ref": "#/$defs/ts_code"},
+        "side": {"enum": ["BUY", "SELL"]},
+        "quantity": {"type": "number", "minimum": 0},
+        "price": {"type": "number", "minimum": 0},
+        "commission": {"type": "number", "minimum": 0},
+        "tax": {"type": "number", "minimum": 0},
+        "slippage": {"type": "number", "minimum": 0},
+        "eligibility_evidence_id": {"$ref": "#/$defs/sha256"},
+        "reject_reason": {"type": ["string", "null"]}
+      }
+    },
+    "eligibility_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "evidence_id", "signal_date", "trade_date", "ts_code",
+        "asset_registry_hash", "buyable", "sellable", "evidence_source_hash",
+        "trading_calendar_hash", "next_trade_date", "calendar_receipt_id"
+      ],
+      "properties": {
+        "_schema": {"const": "eligibility_evidence"},
+        "_version": {"const": "1.0"},
+        "evidence_id": {"$ref": "#/$defs/sha256"},
+        "signal_date": {"$ref": "#/$defs/date"},
+        "trade_date": {"$ref": "#/$defs/date"},
+        "ts_code": {"$ref": "#/$defs/ts_code"},
+        "asset_registry_hash": {"$ref": "#/$defs/sha256"},
+        "buyable": {"type": "boolean"},
+        "sellable": {"type": "boolean"},
+        "evidence_source_hash": {"$ref": "#/$defs/sha256"}
+        ,"trading_calendar_hash": {"$ref": "#/$defs/sha256"}
+        ,"next_trade_date": {"$ref": "#/$defs/date"}
+        ,"calendar_receipt_id": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "execution_calendar_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "receipt_id", "signal_date", "next_trade_date",
+        "calendar_source_hash"
+      ],
+      "properties": {
+        "_schema": {"const": "execution_calendar_receipt"},
+        "_version": {"const": "1.0"},
+        "receipt_id": {"$ref": "#/$defs/sha256"},
+        "signal_date": {"$ref": "#/$defs/date"},
+        "next_trade_date": {"$ref": "#/$defs/date"},
+        "calendar_source_hash": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "holding_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema", "_version", "trade_date", "ts_code", "quantity", "close_price",
+        "target_weight", "executed_weight"
+      ],
+      "properties": {
+        "_schema": {"const": "holding_snapshot"},
+        "_version": {"const": "1.0"},
+        "trade_date": {"$ref": "#/$defs/date"},
+        "ts_code": {"$ref": "#/$defs/ts_code"},
+        "quantity": {"type": "number", "minimum": 0},
+        "close_price": {"type": "number", "minimum": 0},
+        "target_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "executed_weight": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

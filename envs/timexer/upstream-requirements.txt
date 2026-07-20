@@ -1,0 +1,11 @@
+# Exact package versions declared by thuml/TimeXer at commit
+# 76011909357972bd55a27adba2e1be994d81b327. The repository ships no
+# requirements.txt; sibling thuml forecast deps are pinned. Server resolution
+# may fail on RTX 5090; failure is recorded before any compatibility
+# environment is proposed.
+pandas==1.5.3
+scikit-learn==1.2.2
+numpy==1.23.5
+matplotlib==3.7.0
+torch==2.0.0
+reformer-pytorch==1.4.4

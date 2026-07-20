@@ -1,0 +1,52 @@
+# Python environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+*token*
+*.pem
+*.key
+
+# Research data and generated artifacts (never commit)
+/data/
+artifacts/
+runs/
+results/
+reports/generated/
+logs/
+checkpoints/
+weights/
+predictions/
+upstreams/
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.npy
+*.npz
+*.parquet
+*.feather
+*.h5
+*.hdf5
+
+# Editor and OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Non-experiment agent instruction files (kept local, not published)
+AGENTS.md
+CLAUDE.md

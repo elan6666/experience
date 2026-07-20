@@ -1,0 +1,13 @@
+{
+  "version": "baseline-v1",
+  "executable": [
+    "ELIGIBLE_EQUAL_WEIGHT",
+    "MOMENTUM_20D",
+    "CASH"
+  ],
+  "reporting_only": [
+    "OFFICIAL_INDEX"
+  ],
+  "top_fraction": 0.1,
+  "index_return_kind_must_be_explicit": true
+}

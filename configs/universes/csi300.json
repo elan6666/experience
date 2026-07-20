@@ -1,0 +1,11 @@
+{
+  "schema_version": "d0_universe_v1",
+  "universe": "CSI300",
+  "mode": "HISTORICAL_DYNAMIC",
+  "index_code": "000300.SH",
+  "membership_endpoint": "index_weight",
+  "benchmark_endpoint": "index_daily",
+  "formal_status": "PASS_IF_COMPLETE",
+  "latest_member_backfill": false
+}
+

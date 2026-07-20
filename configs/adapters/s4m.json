@@ -1,0 +1,17 @@
+{
+  "schema_version": "deep_model_adapter_v1",
+  "model": "s4m",
+  "upstream_commit": "a718823addd3606e763dfc261174e0135b2535f4",
+  "adapter": "a_share_research.adapters.s4m:S4MAdapter",
+  "status": "READY_FOR_SERVER_A_SHARE_SMOKE_WITH_LICENSE_WARNING",
+  "license_review_required": true,
+  "native_semantics": {
+    "loss": "MSELoss",
+    "optimizer": "SGD",
+    "scheduler": "upstream adjust_learning_rate",
+    "checkpoint": "best validation MSE",
+    "test_visibility_during_fit": false
+  },
+  "stock_order": "causal_asset_master_fixed_slots",
+  "fidelity_label": "official backbone + protocol-safe runner + A-share input adaptation"
+}

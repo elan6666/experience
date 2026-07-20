@@ -1,0 +1,40 @@
+{
+  "schema_version": "deep_adapter_v1",
+  "identity": {
+    "mode": "fold_causal_append_only",
+    "daily_reordering": false,
+    "new_member_policy": "MODEL_UNSUPPORTED_UNTIL_CAUSAL_RETRAIN"
+  },
+  "packing": {
+    "layout": "batch_lookback_asset_feature_then_flatten_asset_feature",
+    "channel_catalog": "d0_feature_schema",
+    "factor_missing_prefix": "missing::",
+    "target_feature": "return_1d",
+    "primary_score": "sum predicted target log returns across the requested horizon",
+    "impute_value_after_train_fold_transform": 0.0,
+    "constant_shape_across": ["A0", "A1", "A2", "A3"],
+    "fidelity_label": "official backbone + A-share input adaptation"
+  },
+  "information_gates": {
+    "A0": ["CORE"],
+    "A1": ["CORE", "F", "F_MISSING"],
+    "A2": ["CORE", "S"],
+    "A3": ["CORE", "F", "F_MISSING", "S"]
+  },
+  "mandatory_sidecar_masks": [
+    "member",
+    "observed",
+    "feature_missing.*",
+    "label_available",
+    "buyable",
+    "sellable",
+    "loss",
+    "evaluation"
+  ],
+  "export": {
+    "drop_last": false,
+    "require_every_expected_date": true,
+    "require_every_evaluation_asset": true,
+    "finite_scores": true
+  }
+}

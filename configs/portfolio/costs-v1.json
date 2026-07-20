@@ -1,0 +1,8 @@
+{
+  "version": "a-share-costs-v1",
+  "effective_date": "2019-01-01",
+  "commission_rate": 0.0003,
+  "sell_tax_rate": 0.001,
+  "slippage_rate": 0.0005,
+  "note": "Research assumption. Source-date verification is required before formal execution claims."
+}

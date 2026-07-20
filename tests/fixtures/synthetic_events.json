@@ -1,0 +1,14 @@
+{
+  "description": "Synthetic-only PIT and execution edge cases; not market data.",
+  "assets": ["000001.SZ", "600000.SH", "688001.SH", "300001.SZ"],
+  "events": [
+    {"date": "2024-12-20", "asset": "688001.SH", "event": "pre_ipo"},
+    {"date": "2025-01-02", "asset": "688001.SH", "event": "constituent_entry"},
+    {"date": "2025-01-03", "asset": "600000.SH", "event": "suspension"},
+    {"date": "2025-01-06", "asset": "000001.SZ", "event": "limit_up"},
+    {"date": "2025-01-07", "asset": "300001.SZ", "event": "limit_down"},
+    {"date": "2025-01-08", "asset": "688001.SH", "event": "financial_missing"},
+    {"date": "2025-01-09", "asset": "300001.SZ", "event": "constituent_exit"},
+    {"date": "2025-01-10", "asset": "600000.SH", "event": "delisting"}
+  ]
+}

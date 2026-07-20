@@ -1,0 +1,154 @@
+{
+  "schema_version": "v0_registry_v1",
+  "upstream_registry": "configs/upstreams.lock.yaml",
+  "protocol": {
+    "protocol_version": "v1",
+    "frequency": "weekly",
+    "horizon": 5,
+    "entry": "T+1_OPEN",
+    "train": [
+      "2019-01-01",
+      "2024-12-31"
+    ],
+    "validation": [
+      "2025-01-01",
+      "2025-12-31"
+    ],
+    "legacy_viewed": [
+      "2026-01-01",
+      "2026-07-17"
+    ],
+    "legacy_policy": "REPORT_ONLY_NO_SELECTION",
+    "information_set": "A0",
+    "information_groups": [
+      "CORE"
+    ],
+    "selection_partition": "VALIDATION_ONLY"
+  },
+  "server": {
+    "d0_manifest_path": "/data/yilangliu/a_share_research/data/manifests/d0-v1.json",
+    "output_root": "/data/yilangliu/a_share_research/runs/v0",
+    "checkpoint_root": "/data/yilangliu/a_share_research/checkpoints/v0"
+  },
+  "universes": [
+    "CSI300",
+    "STAR50",
+    "TECH32",
+    "TECH100"
+  ],
+  "models": [
+    {
+      "name": "ridge",
+      "lane": "CPU",
+      "upstream_commit": "internal:scikit-learn-1.9.0",
+      "model_config_files": [
+        "configs/models/ridge-v1.json",
+        "configs/features/tabular-layout-v1.json"
+      ],
+      "adapter_files": [
+        "src/a_share_research/models/tabular/ridge.py",
+        "src/a_share_research/models/tabular/common.py",
+        "src/a_share_research/models/tabular/preprocessing.py"
+      ],
+      "environment_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/ridge_baseline_env_20260719.json",
+      "integrity_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/ridge_baseline_env_20260719.json"
+    },
+    {
+      "name": "lightgbm",
+      "lane": "CPU",
+      "upstream_commit": "internal:lightgbm-4.7.0",
+      "model_config_files": [
+        "configs/models/lightgbm-v1.json",
+        "configs/features/tabular-layout-v1.json"
+      ],
+      "adapter_files": [
+        "src/a_share_research/models/tabular/lightgbm.py",
+        "src/a_share_research/models/tabular/common.py",
+        "src/a_share_research/models/tabular/preprocessing.py"
+      ],
+      "environment_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/lightgbm_baseline_env_20260719.json",
+      "integrity_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/lightgbm_baseline_env_20260719.json"
+    },
+    {
+      "name": "itransformer",
+      "lane": "GPU0",
+      "upstream_commit": "c2426e68ca13f74aaec08045c5c724d8ad328124",
+      "model_config_files": [
+        "configs/adapters/itransformer.json",
+        "configs/adapters/deep-common.json"
+      ],
+      "adapter_files": [
+        "src/a_share_research/adapters/itransformer/wrapper.py",
+        "src/a_share_research/adapters/common/runtime.py",
+        "src/a_share_research/adapters/common/packing.py"
+      ],
+      "environment_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/itransformer_compat_env_20260719.json",
+      "integrity_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/itransformer_smoke_20260719.json"
+    },
+    {
+      "name": "fact",
+      "lane": "GPU1",
+      "upstream_commit": "aa825721d1a0a6032b2f8bcccc6e0f7b14884ae4",
+      "model_config_files": [
+        "configs/adapters/fact.json",
+        "configs/adapters/deep-common.json"
+      ],
+      "adapter_files": [
+        "src/a_share_research/adapters/fact/wrapper.py",
+        "src/a_share_research/adapters/common/runtime.py",
+        "src/a_share_research/adapters/common/packing.py"
+      ],
+      "environment_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/fact_compat_env_20260719.json",
+      "integrity_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/fact_smoke_20260719.json"
+    },
+    {
+      "name": "timepro",
+      "lane": "GPU1",
+      "upstream_commit": "70a20e5a257b30eb026ee4316293cf4feeb92a1f",
+      "model_config_files": [
+        "configs/adapters/timepro.json",
+        "configs/adapters/deep-common.json"
+      ],
+      "adapter_files": [
+        "src/a_share_research/adapters/timepro/wrapper.py",
+        "src/a_share_research/adapters/common/runtime.py",
+        "src/a_share_research/adapters/common/packing.py"
+      ],
+      "environment_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/timepro_compat_env_20260720.json",
+      "integrity_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/timepro_smoke_20260720.json"
+    },
+    {
+      "name": "timexer",
+      "lane": "GPU0",
+      "upstream_commit": "76011909357972bd55a27adba2e1be994d81b327",
+      "model_config_files": [
+        "configs/adapters/timexer.json",
+        "configs/adapters/deep-common.json"
+      ],
+      "adapter_files": [
+        "src/a_share_research/adapters/timexer/wrapper.py",
+        "src/a_share_research/adapters/common/runtime.py",
+        "src/a_share_research/adapters/common/packing.py"
+      ],
+      "environment_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/timexer_compat_env_20260720.json",
+      "integrity_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/timexer_smoke_20260720.json"
+    },
+    {
+      "name": "s4m",
+      "lane": "NONE",
+      "upstream_commit": "a718823addd3606e763dfc261174e0135b2535f4",
+      "model_config_files": [
+        "configs/adapters/s4m.json",
+        "configs/adapters/deep-common.json"
+      ],
+      "adapter_files": [
+        "src/a_share_research/adapters/s4m/wrapper.py",
+        "src/a_share_research/adapters/common/runtime.py",
+        "src/a_share_research/adapters/common/packing.py"
+      ],
+      "environment_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/s4m_compat_env_20260720.json",
+      "integrity_receipt_path": "/data/yilangliu/a_share_research/receipts/upstream_v2/s4m_smoke_20260720.json",
+      "license_receipt_path": "/data/yilangliu/a_share_research/seven_model_research/envs/s4m/BLOCKED_LICENSE.md"
+    }
+  ]
+}

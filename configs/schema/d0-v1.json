@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.a-share-research/d0-v1.json",
+  "title": "D0 manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "_schema",
+    "_version",
+    "dataset_id",
+    "created_at_utc",
+    "cutoff_date",
+    "raw_snapshot_hashes",
+    "canonical_table_hashes",
+    "security_master_hash",
+    "trading_calendar_hash",
+    "feature_schema_hash",
+    "market_state_hash",
+    "universe_gates",
+    "provider_transport_notice",
+    "protocol_version"
+  ],
+  "properties": {
+    "_schema": {"const": "d0_manifest"},
+    "_version": {"const": "1.0"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "created_at_utc": {"type": "string", "format": "date-time"},
+    "cutoff_date": {"type": "string", "format": "date"},
+    "raw_snapshot_hashes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/sha256"}
+    },
+    "canonical_table_hashes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/sha256"}
+    },
+    "security_master_hash": {"$ref": "#/$defs/sha256"},
+    "trading_calendar_hash": {"$ref": "#/$defs/sha256"},
+    "feature_schema_hash": {"$ref": "#/$defs/sha256"},
+    "market_state_hash": {"$ref": "#/$defs/sha256"},
+    "universe_gates": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/universe_gate"}
+    },
+    "provider_transport_notice": {"type": "string", "pattern": "plain HTTP"},
+    "protocol_version": {"const": "v1"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "universe_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_schema",
+        "_version",
+        "universe",
+        "status",
+        "membership_coverage",
+        "core_coverage",
+        "duplicate_keys",
+        "pit_violations",
+        "label_boundary_violations",
+        "feature_schema_violations",
+        "warnings"
+      ],
+      "properties": {
+        "_schema": {"const": "d0_universe_gate"},
+        "_version": {"const": "1.0"},
+        "universe": {"enum": ["CSI300", "STAR50", "TECH32", "TECH100"]},
+        "status": {
+          "enum": ["PASS", "PASS_WITH_WARNING", "EXPLORATORY_ONLY", "BLOCKED", "INVALID_DATA"]
+        },
+        "membership_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "core_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "duplicate_keys": {"type": "integer", "minimum": 0},
+        "pit_violations": {"type": "integer", "minimum": 0},
+        "label_boundary_violations": {"type": "integer", "minimum": 0},
+        "feature_schema_violations": {"type": "integer", "minimum": 0},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

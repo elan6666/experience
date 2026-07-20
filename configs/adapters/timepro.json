@@ -1,0 +1,17 @@
+{
+  "schema_version": "deep_model_adapter_v1",
+  "model": "timepro",
+  "upstream_commit": "70a20e5a257b30eb026ee4316293cf4feeb92a1f",
+  "adapter": "a_share_research.adapters.timepro:TimeProAdapter",
+  "status": "READY_FOR_SERVER_A_SHARE_SMOKE_WITH_LICENSE_WARNING",
+  "license_review_required": true,
+  "native_semantics": {
+    "loss": "MSELoss",
+    "optimizer": "Adam",
+    "scheduler": "upstream adjust_learning_rate",
+    "checkpoint": "best validation MSE",
+    "test_visibility_during_fit": false
+  },
+  "stock_order": "causal_asset_master_fixed_slots",
+  "fidelity_label": "official backbone + protocol-safe runner + A-share input adaptation"
+}

@@ -1,0 +1,11 @@
+{
+  "schema_version": "d0_universe_v1",
+  "universe": "TECH32",
+  "mode": "STATIC_SELECTED_2026",
+  "selection_date": "2026-07-17",
+  "source_preference": ["data/processed/tech32_open_to_open_v2", "approved frozen mapping"],
+  "formal_status": "EXPLORATORY_ONLY",
+  "benchmark": "eligible_member_equal_weight",
+  "expected_count": 32
+}
+

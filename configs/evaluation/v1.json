@@ -1,0 +1,34 @@
+{
+  "version": "common-evaluation-v1",
+  "primary_frequency": "WEEKLY_5D",
+  "frequency_horizons": {
+    "DAILY_1D": 1,
+    "WEEKLY_5D": 5,
+    "MONTHLY_20D": 20
+  },
+  "supports": [
+    "COMMON",
+    "NATIVE"
+  ],
+  "outcomes": [
+    "ABSOLUTE",
+    "BENCHMARK_RELATIVE"
+  ],
+  "group_count": 5,
+  "bootstrap": {
+    "method": "MOVING_BLOCK",
+    "draws": 2000,
+    "seed": 20260719,
+    "block_length_must_be_predeclared_by_frequency": true
+  },
+  "hac": {
+    "kernel": "BARTLETT",
+    "lag_must_be_predeclared_by_frequency": true
+  },
+  "multiple_testing": {
+    "confirmatory": "HOLM",
+    "exploratory": "BENJAMINI_HOCHBERG",
+    "failed_attempts_remain_in_family": true
+  },
+  "selection_policy": "Validation-only. Legacy-viewed and future-unseen labels cannot select rules."
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": "v1_information_ablation_v1",
+  "parent": {
+    "registry": "configs/experiments/v0/registry-v1.json",
+    "a0_policy": "REFERENCE_ONLY",
+    "a0_expected_cells": 28,
+    "incremental_expected_cells": 84,
+    "complete_expected_cells": 112
+  },
+  "models": [
+    "ridge",
+    "lightgbm",
+    "itransformer",
+    "fact",
+    "timepro",
+    "timexer",
+    "s4m"
+  ],
+  "universes": [
+    "CSI300",
+    "STAR50",
+    "TECH32",
+    "TECH100"
+  ],
+  "information_sets": {
+    "A0": [
+      "CORE"
+    ],
+    "A1": [
+      "CORE",
+      "F",
+      "F_MISSING"
+    ],
+    "A2": [
+      "CORE",
+      "S"
+    ],
+    "A3": [
+      "CORE",
+      "F",
+      "F_MISSING",
+      "S"
+    ]
+  },
+  "frozen_training_fields": [
+    "model_capacity_hash",
+    "model_hyperparameters_hash",
+    "train_window",
+    "validation_window",
+    "label",
+    "frequency",
+    "optimizer",
+    "max_epochs",
+    "early_stopping",
+    "seeds"
+  ],
+  "primary_protocol": {
+    "train": [
+      "2019-01-01",
+      "2024-12-31"
+    ],
+    "paired_validation": [
+      "2025-01-01",
+      "2025-12-31"
+    ],
+    "label": "future_5d_open_to_open_excess_return",
+    "frequency": "WEEKLY",
+    "market_state": "one independent CSI300 state shared by all cells"
+  },
+  "model_training": {
+    "ridge": {
+      "optimizer": "sklearn_ridge_solver_auto",
+      "max_epochs": null,
+      "early_stopping": "NONE"
+    },
+    "lightgbm": {
+      "optimizer": "gradient_boosted_trees",
+      "max_epochs": 2000,
+      "early_stopping": "validation_only_rounds_100"
+    },
+    "itransformer": {
+      "optimizer": "upstream_Adam",
+      "max_epochs": 100,
+      "early_stopping": "upstream_validation_MSE_patience_3"
+    },
+    "fact": {
+      "optimizer": "upstream_Adam",
+      "max_epochs": 100,
+      "early_stopping": "upstream_validation_MSE_patience_3"
+    },
+    "timepro": {
+      "optimizer": "upstream_Adam",
+      "max_epochs": 100,
+      "early_stopping": "upstream_validation_MSE_patience_3"
+    },
+    "timexer": {
+      "optimizer": "upstream_Adam",
+      "max_epochs": 100,
+      "early_stopping": "upstream_validation_MSE_patience_3"
+    },
+    "s4m": {
+      "optimizer": "upstream_SGD",
+      "max_epochs": 100,
+      "early_stopping": "upstream_validation_MSE_patience_3"
+    }
+  },
+  "blocked_license_models": ["s4m"],
+  "exploratory_only_universes": [
+    "TECH32",
+    "TECH100"
+  ],
+  "comparisons": [
+    "A1-A0",
+    "A2-A0",
+    "A3-A0",
+    "A3-A1",
+    "A3-A2"
+  ],
+  "selection": {
+    "allowed_split": "VALIDATION",
+    "legacy_viewed_2026_allowed": false,
+    "future_unseen_allowed": false
+  },
+  "execution": "REGISTRY_ONLY_NO_TRAINING"
+}
