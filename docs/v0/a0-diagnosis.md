@@ -41,11 +41,11 @@ deep cell 的 `best_epoch` / `epochs_completed` / `best_validation_mse`（来自
 - parameter_count=73396（极小），asset_tokens=499（csi300）。判定: **FAIL_CONVERGENCE**——未收敛，IC 不可作为模型真实能力定论。需排查学习率/warmup/早停 patience/验证调度。
 - 仅 csi300 s21（唯一充分训练的 cell）IC=+0.0130，提示充分训练后 iTransformer 可能非负——支持"收敛问题而非模型问题"的判断。
 
-**根因假设（待验证）**:
-- 训练循环（`torch_runtime.py:fit_protocol_safe`）无梯度裁剪、无 LR warmup，调度为 lradj type1；Adam LR=1e-4 统一。iTransformer 反转 variate-attention（对 499 asset token 做跨变量注意力）在无裁剪/warmup 时对初始化敏感，多数 seed 第 1 轮后验证损失恶化即发散。
-- 对比：timexer 用 patch_len=16 patching 起正则/稳定作用，相同 LR 下训练稳定（epoch 19-24）。
-- iTransformer 配置含 `class_strategy="projection"` 但缺 `task_name="long_term_forecast"`（其他模型均有），需确认是否模式不匹配。
-- 拟修复（需评审标注为偏差）：为 iTransformer 增加梯度裁剪 + LR warmup 后重跑，再下定论。不因 2026 结果差而加 epoch。
+**根因分析（已核查上游保真）**:
+- 已比对上游 `upstream/itransformer@c2426e68ca13/experiments/exp_long_term_forecasting.py`：作者训练循环同样**无梯度裁剪**，同样用 Adam + `adjust_learning_rate`(lradj type1) + `EarlyStopping(patience)`。adapter `fit_protocol_safe` 忠实复现（无裁剪、同 LR 调度、同早停），`grad_clip`/`warmup` 缺失**不是保真 bug**。
+- 投影/归一化/损失（`SharedPerAssetProjector` C->1、`OutOfPlaceNativeNormalization`、MSE）为四深度模型共享，fact/timepro/timexer 均正常收敛，故非 adapter 实现 bug。
+- 判定：iTransformer 反转 variate-attention（对 499 asset token 做跨变量注意力、d_model=64、参数仅 73K）在周频 A-share 数据上对初始化敏感，多数 seed 第 1 轮后验证损失恶化即发散；timexer 靠 patch_len=16 patching 在相同 LR 下稳定。属**模型-数据交互**，训练忠实于作者。
+- 候选偏差实验（需评审标注、非保真修复）：梯度裁剪 / LR warmup / 降低 iTransformer 专用 LR 后重跑。不因 2026 结果差而加 epoch。
 
 ### FACT / TimePro — 收敛充分但 IC 近零/负
 
