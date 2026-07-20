@@ -82,3 +82,52 @@ A1、A2、A3 收据。不传 A0，因为 V1 不重训 A0。
   源码之外，且在 cell hash 和运行收据中标注。
 - 生成目录不可覆盖。需要重跑时，必须先根据现有收据做出明确的人工
   审计决定，不得由生成器静默删除。
+
+## V1 实际生成命令（2026-07-20 已验证，六模型/4 deep）
+
+V1 不重训 A0，仅生成 A1/A2/A3 消融 cell。源码变更后需先重建 source manifest
+（此处为 v7）。CSI300 有 A1-A3 正式特征回执；TECH32/TECH100 为 EXPLORATORY_ONLY
+不需正式回执即可入队；STAR50 被 D0 gate 阻断。
+
+结果：planned=144，blocked=36（全为 STAR50 D0_GATE_BLOCKED），runnable=108
+（CSI300/TECH32/TECH100 × A1/A2/A3 × 4 模型 × 3 seed），4 GPU 队列
+（GPU0: itransformer+timexer，GPU1: fact+timepro）。
+
+```bash
+cd /data/yilangliu/a_share_research/seven_model_research
+R=/data/yilangliu/a_share_research; SR=$R/seven_model_research
+# 1) 源码变更后重建 source manifest
+.venv/bin/python scripts/build_source_manifest.py --root $SR \
+  --output $R/receipts/source/source-manifest-v7.json
+# 2) 生成 V1 deep 清单（4 模型）
+.venv/bin/python scripts/generate_deep_job_manifests.py --phase V1 \
+  --d0-manifest $R/data/manifests/d0-v1.json \
+  --canonical-root $R/data/canonical/d0-v1 \
+  --upstream-root itransformer=$R/upstream/itransformer@c2426e68ca13 \
+  --upstream-root fact=$R/upstream/fact@aa825721d1a0 \
+  --upstream-root timepro=$R/upstream/timepro@70a20e5a257b \
+  --upstream-root timexer=$R/upstream/timexer@760119093579 \
+  --environment-receipt itransformer=$R/receipts/upstream_v2/itransformer_compat_env_20260719.json \
+  --environment-receipt fact=$R/receipts/upstream_v2/fact_compat_env_20260719.json \
+  --environment-receipt timepro=$R/receipts/upstream_v2/timepro_compat_env_20260720.json \
+  --environment-receipt timexer=$R/receipts/upstream_v2/timexer_compat_env_20260720.json \
+  --integrity-receipt itransformer=$R/receipts/upstream_v2/itransformer_checkout_20260719.json \
+  --integrity-receipt fact=$R/receipts/upstream_v2/fact_checkout_20260719.json \
+  --integrity-receipt timepro=$R/receipts/upstream_v2/timepro-checkout.json \
+  --integrity-receipt timexer=$R/receipts/upstream_v2/timexer_checkout_20260720.json \
+  --code-receipt $R/receipts/source/source-manifest-v7.json \
+  --adapter-config itransformer=$SR/configs/adapters/itransformer.json \
+  --adapter-config fact=$SR/configs/adapters/fact.json \
+  --adapter-config timepro=$SR/configs/adapters/timepro.json \
+  --adapter-config timexer=$SR/configs/adapters/timexer.json \
+  --common-config $SR/configs/adapters/deep-common.json \
+  --formal-feature-receipt CSI300:A1=$R/receipts/d0/formal-csi300-a1.json \
+  --formal-feature-receipt CSI300:A2=$R/receipts/d0/formal-csi300-a2.json \
+  --formal-feature-receipt CSI300:A3=$R/receipts/d0/formal-csi300-a3.json \
+  --run-root $R/runs --checkpoint-root $R/checkpoints \
+  --job-root $R/jobs/deep/v1 --queue-root $R/queues/deep/v1
+```
+
+待办：tabular V1（ridge/lightgbm × A1/A2/A3）尚未生成（V0 tabular 未走清单生成
+机制，需排查 `generate_tabular_job_manifests.py` 的 model-config/environment-receipt
+路径）；V1 训练待服务器维护后启动（108 deep cell，注意 iTransformer 收敛问题仍存在）。
