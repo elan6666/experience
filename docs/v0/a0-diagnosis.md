@@ -41,6 +41,12 @@ deep cell 的 `best_epoch` / `epochs_completed` / `best_validation_mse`（来自
 - parameter_count=73396（极小），asset_tokens=499（csi300）。判定: **FAIL_CONVERGENCE**——未收敛，IC 不可作为模型真实能力定论。需排查学习率/warmup/早停 patience/验证调度。
 - 仅 csi300 s21（唯一充分训练的 cell）IC=+0.0130，提示充分训练后 iTransformer 可能非负——支持"收敛问题而非模型问题"的判断。
 
+**根因假设（待验证）**:
+- 训练循环（`torch_runtime.py:fit_protocol_safe`）无梯度裁剪、无 LR warmup，调度为 lradj type1；Adam LR=1e-4 统一。iTransformer 反转 variate-attention（对 499 asset token 做跨变量注意力）在无裁剪/warmup 时对初始化敏感，多数 seed 第 1 轮后验证损失恶化即发散。
+- 对比：timexer 用 patch_len=16 patching 起正则/稳定作用，相同 LR 下训练稳定（epoch 19-24）。
+- iTransformer 配置含 `class_strategy="projection"` 但缺 `task_name="long_term_forecast"`（其他模型均有），需确认是否模式不匹配。
+- 拟修复（需评审标注为偏差）：为 iTransformer 增加梯度裁剪 + LR warmup 后重跑，再下定论。不因 2026 结果差而加 epoch。
+
 ### FACT / TimePro — 收敛充分但 IC 近零/负
 
 - FACT: best_epoch 2–20，val_mse 较低较稳（0.012–0.091）；TimePro: best_epoch 1–27，val_mse 0.007–0.068。
