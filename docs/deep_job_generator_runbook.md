@@ -128,6 +128,15 @@ R=/data/yilangliu/a_share_research; SR=$R/seven_model_research
   --job-root $R/jobs/deep/v1 --queue-root $R/queues/deep/v1
 ```
 
-待办：tabular V1（ridge/lightgbm × A1/A2/A3）尚未生成（V0 tabular 未走清单生成
-机制，需排查 `generate_tabular_job_manifests.py` 的 model-config/environment-receipt
-路径）；V1 训练待服务器维护后启动（108 deep cell，注意 iTransformer 收敛问题仍存在）。
+待办：tabular V1（ridge/lightgbm × A1/A2/A3）尚未生成。`generate_tabular_job_manifests.py`
+参数已确认（model-config=configs/models/{ridge,lightgbm}-v1.json、layout-config=
+configs/features/tabular-layout-v1.json、environment-receipt=upstream_v2/*_baseline_env_*.json）。
+
+**性能 bug（已定位）**：tabular 生成器在 `for universe` 循环内对每个 universe 调
+`validation_registry_hash` -> `loader.iter_tabular_samples(start=2025,end=2025)`，
+该 loader 全量解析 canonical JSONL（CSI300 features 3.6G）后过滤 2025 验证面板。
+4 个 universe 串行全量解析 = 6-7 分钟（deep 仅 55 秒，因 deep 只算一次/复用 asset
+registry hash）。修复方向：让 `iter_tabular_samples` 支持日期范围早退/索引，或缓存
+per-universe 解析结果。生成器非卡死，纯 CPU JSONL 解析，耐心等可完成；或修复后重跑。
+
+V1 训练待服务器维护后启动（108 deep cell，注意 iTransformer 收敛问题仍存在）。
