@@ -16,7 +16,10 @@ from pathlib import Path
 
 from a_share_research.contracts import ContractError
 from a_share_research.evaluation.schema import OutcomeMode, SupportMode
-from a_share_research.evaluation.v0_scoring import score_v0_universe
+from a_share_research.evaluation.v0_scoring import (
+    discover_all_v0_predictions,
+    score_v0_universe,
+)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -35,15 +38,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
+    all_frames = discover_all_v0_predictions(args.runs_root)
     summary: list[dict[str, object]] = []
     exit_code = 0
     for universe in args.universes:
+        frames_by_model = all_frames.get(universe, {})
+        if not frames_by_model:
+            print(
+                json.dumps(
+                    {"universe": universe, "state": "NO_PREDICTIONS"},
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+            )
+            exit_code = 1
+            continue
         try:
             result = score_v0_universe(
                 canonical_root=args.canonical_root,
                 universe=universe,
                 staged_calendar=args.staged_calendar,
-                runs_root=args.runs_root,
+                frames_by_model=frames_by_model,
             )
         except ContractError as error:
             print(

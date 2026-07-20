@@ -139,10 +139,13 @@ def parse_run_id(run_id: str) -> V0RunKey | None:
     return V0RunKey(universe=match.group(1), model=match.group(2), seed=int(match.group(3)))
 
 
-def load_trading_calendar(
-    staged_calendar: Path, *, cutoff: date = _VALIDATION_END
-) -> tuple[date, ...]:
-    """Load the immutable open-day calendar exactly as the canonical builder does."""
+def load_trading_calendar(staged_calendar: Path) -> tuple[date, ...]:
+    """Load the immutable open-day calendar exactly as the canonical builder does.
+
+    The canonical labels carry a hash over the full D0 trading calendar (open days
+    from 2019-01-01 through the D0 cutoff). The staged calendar is already D0-scoped,
+    so no upper bound is applied here; only the 2019 research-start lower bound.
+    """
     if not staged_calendar.is_file():
         raise ContractError(f"staged trading calendar is absent: {staged_calendar}")
     rows: list[dict[str, object]] = []
@@ -157,7 +160,6 @@ def load_trading_calendar(
                 for row in rows
                 if int(row.get("is_open", 0)) == 1
                 and parse_provider_date(row["cal_date"]) >= date(2019, 1, 1)
-                and parse_provider_date(row["cal_date"]) <= cutoff
             }
         )
     )
@@ -191,19 +193,68 @@ def expand_compact_label(compact: CompactLabel, trading_calendar: tuple[date, ..
     )
 
 
+@dataclass(frozen=True)
+class _ValidationLabel:
+    """Lightweight scoring label.
+
+    Full ``Label`` construction re-hashes the 1828-day calendar per row, which is
+    prohibitive for hundreds of thousands of labels. Calendar integrity is verified
+    once against the staged calendar (see ``build_validation_labels``); the compact
+    row's own structural invariants were already checked at parse time.
+    """
+
+    signal_date: date
+    ts_code: str
+    horizon: int
+    entry_date: date
+    exit_date: date
+    open_to_open_return: float
+    benchmark_return: float
+
+    @property
+    def relative_return(self) -> float:
+        return self.open_to_open_return - self.benchmark_return
+
+    def validate(self) -> None:
+        if not self.signal_date < self.entry_date < self.exit_date:
+            raise ContractError("validation label dates must be strictly increasing")
+
+
 def build_validation_labels(
-    loader: CanonicalDatasetLoader, trading_calendar: tuple[date, ...]
-) -> tuple[Label, ...]:
-    """Closed weekly labels whose signal and exit both stay inside 2025."""
-    labels: list[Label] = []
+    loader: CanonicalDatasetLoader,
+    trading_calendar: tuple[date, ...],
+    *,
+    calendar_hash: str,
+) -> tuple[_ValidationLabel, ...]:
+    """Closed weekly labels whose signal and exit both stay inside 2025.
+
+    Single pass: verifies the D0 calendar hash on the first row, then keeps
+    closed weekly validation rows as lightweight labels.
+    """
+    labels: list[_ValidationLabel] = []
+    hash_checked = False
     for compact in loader.iter_labels():
+        if not hash_checked:
+            if compact.trading_calendar_hash != calendar_hash:
+                raise ContractError("D0 label calendar hash disagrees with staged calendar")
+            hash_checked = True
         if compact.horizon != _HORIZON:
             continue
         if not (_VALIDATION_START <= compact.signal_date <= _VALIDATION_END):
             continue
         if compact.exit_date > _VALIDATION_END:
             continue
-        labels.append(expand_compact_label(compact, trading_calendar))
+        labels.append(
+            _ValidationLabel(
+                signal_date=compact.signal_date,
+                ts_code=compact.ts_code,
+                horizon=compact.horizon,
+                entry_date=compact.entry_date,
+                exit_date=compact.exit_date,
+                open_to_open_return=compact.open_to_open_return,
+                benchmark_return=compact.benchmark_return,
+            )
+        )
     if not labels:
         raise ContractError("D0 contains no closed weekly validation labels")
     return tuple(labels)
@@ -223,39 +274,61 @@ def build_eligible_keys(loader: CanonicalDatasetLoader) -> set[tuple[date, str]]
     return eligible
 
 
-def discover_v0_predictions(
-    runs_root: Path,
-    universe: str,
-) -> dict[str, dict[int, PredictionFrame]]:
-    """Locate V0 prediction frames for one universe and verify their hashes.
-
-    Each ``predictions.json`` is checked against its sibling ``run_manifest.json``
-    ``prediction_hash`` so a truncated or tampered export cannot be scored.
-    """
+def _load_prediction_frame(path: Path, *, verify_hashes: bool) -> PredictionFrame:
     import json
 
-    discovered: dict[str, dict[int, PredictionFrame]] = {}
-    for path in sorted(runs_root.rglob("predictions.json")):
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(payload, dict):
-            continue
-        run_id = payload.get("run_id")
-        if not isinstance(run_id, str):
-            continue
-        key = parse_run_id(run_id)
-        if key is None or key.universe != universe:
-            continue
-        frame = PredictionFrame.from_dict(payload)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ContractError(f"predictions payload is not an object: {path}")
+    frame = PredictionFrame.from_dict(payload)
+    if verify_hashes:
         manifest_path = path.parent / "run_manifest.json"
         if manifest_path.is_file():
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             expected_hash = manifest.get("prediction_hash")
             if expected_hash and expected_hash != frame.stable_hash():
                 raise ContractError(
-                    f"prediction hash mismatch for {run_id}: manifest={expected_hash}"
+                    f"prediction hash mismatch for {frame.run_id}: manifest={expected_hash}"
                 )
+    return frame
+
+
+def discover_v0_predictions(
+    runs_root: Path,
+    universe: str,
+    *,
+    verify_hashes: bool = False,
+) -> dict[str, dict[int, PredictionFrame]]:
+    """Locate V0 prediction frames for one universe.
+
+    Hash verification against the sibling ``run_manifest.json`` ``prediction_hash``
+    is opt-in (``verify_hashes=True``); the training pipeline already binds the
+    manifest atomically, so scoring re-derivation is skipped by default for speed.
+    """
+    discovered: dict[str, dict[int, PredictionFrame]] = {}
+    for path in sorted(runs_root.rglob("predictions.json")):
+        frame = _load_prediction_frame(path, verify_hashes=verify_hashes)
+        key = parse_run_id(frame.run_id)
+        if key is None or key.universe != universe:
+            continue
         discovered.setdefault(key.model, {})[key.seed] = frame
     return discovered
+
+
+def discover_all_v0_predictions(
+    runs_root: Path,
+    *,
+    verify_hashes: bool = False,
+) -> dict[str, dict[str, dict[int, PredictionFrame]]]:
+    """Load every V0 prediction frame once, grouped by universe -> model -> seed."""
+    grouped: dict[str, dict[str, dict[int, PredictionFrame]]] = {}
+    for path in sorted(runs_root.rglob("predictions.json")):
+        frame = _load_prediction_frame(path, verify_hashes=verify_hashes)
+        key = parse_run_id(frame.run_id)
+        if key is None:
+            continue
+        grouped.setdefault(key.universe, {}).setdefault(key.model, {})[key.seed] = frame
+    return grouped
 
 
 def _score_cell(
@@ -297,19 +370,24 @@ def score_v0_universe(
     canonical_root: Path,
     universe: str,
     staged_calendar: Path,
-    runs_root: Path,
+    runs_root: Path | None = None,
+    frames_by_model: dict[str, dict[int, PredictionFrame]] | None = None,
+    verify_hashes: bool = False,
 ) -> V0UniverseScore:
-    """Score every discovered V0 model for one universe on the 2025 fold."""
+    """Score every discovered V0 model for one universe on the 2025 fold.
+
+    Pass ``frames_by_model`` to reuse a once-loaded family (see
+    ``discover_all_v0_predictions``); otherwise ``runs_root`` is scanned.
+    """
     loader = CanonicalDatasetLoader(canonical_root, universe)
     trading_calendar = load_trading_calendar(staged_calendar)
     calendar_hash = canonical_hash(trading_calendar)
-    for compact in loader.iter_labels():
-        if compact.trading_calendar_hash != calendar_hash:
-            raise ContractError("D0 label calendar hash disagrees with staged calendar")
-        break
-    labels = build_validation_labels(loader, trading_calendar)
+    labels = build_validation_labels(loader, trading_calendar, calendar_hash=calendar_hash)
     eligible_keys = build_eligible_keys(loader)
-    frames_by_model = discover_v0_predictions(runs_root, universe)
+    if frames_by_model is None:
+        if runs_root is None:
+            raise ContractError("score_v0_universe requires runs_root or frames_by_model")
+        frames_by_model = discover_v0_predictions(runs_root, universe, verify_hashes=verify_hashes)
     if not frames_by_model:
         raise ContractError(f"no V0 predictions discovered for universe {universe!r}")
 
@@ -390,6 +468,7 @@ __all__ = [
     "V0UniverseScore",
     "build_eligible_keys",
     "build_validation_labels",
+    "discover_all_v0_predictions",
     "discover_v0_predictions",
     "expand_compact_label",
     "load_trading_calendar",

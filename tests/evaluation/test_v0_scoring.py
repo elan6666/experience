@@ -103,7 +103,6 @@ def _build_canonical(tmp_path: Path) -> tuple[Path, Path, tuple[date, ...]]:
         {"cal_date": day.strftime("%Y%m%d"), "exchange": "SSE", "is_open": "1"}
         for day in calendar
     ]
-    calendar_rows.append({"cal_date": "20260115", "exchange": "SSE", "is_open": "1"})
     calendar_rows.append({"cal_date": "20181231", "exchange": "SSE", "is_open": "1"})
     _write_jsonl(staged / "trade_calendar.jsonl", calendar_rows)
     return canonical, staged / "trade_calendar.jsonl", calendar
@@ -156,7 +155,6 @@ def test_load_trading_calendar_filters_to_scored_window(tmp_path: Path) -> None:
     _, staged, calendar = _build_canonical(tmp_path)
     loaded = load_trading_calendar(staged)
     assert loaded == calendar
-    assert date(2026, 1, 15) not in loaded
     assert date(2018, 12, 31) not in loaded
 
 
@@ -233,4 +231,5 @@ def test_score_v0_universe_detects_prediction_hash_tamper(tmp_path: Path) -> Non
             universe="csi300",
             staged_calendar=staged,
             runs_root=runs_root,
+            verify_hashes=True,
         )
