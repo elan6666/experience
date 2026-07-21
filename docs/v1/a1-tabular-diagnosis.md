@@ -2,7 +2,7 @@
 
 **Phase**: V1 (information ablation: A1 full, A2 reduced, A3 minimal)
 **Models**: Ridge, LightGBM (tabular only; deep models pending GPU recovery)
-**Universes**: CSI300 (PASS_WITH_WARNING), tech32 (EXPLORATORY_ONLY), tech100 (EXPLORATORY_ONLY)
+**Universes**: CSI300 (PASS_WITH_WARNING), tech32 (EXPLORATORY_ONLY), tech90 (EXPLORATORY_ONLY)
 **Fold**: 2025 validation (not final; 2026 = FUTURE_UNSEEN evaluation)
 **Seeds**: 1 (20260719)
 **Scorecards**: 72 (3 universes × 3 gates × 2 models × 4 support/outcome), 0 failures
@@ -26,7 +26,7 @@
 | A2 | +0.072 | +0.036 |
 | A3 | +0.066 | -0.011 |
 
-### tech100 (exploratory, 5168 eligible, 5120 common)
+### tech90 (exploratory, 5168 eligible, 5120 common)
 
 | Gate | Ridge IC | LightGBM IC |
 |------|----------|-------------|
@@ -48,7 +48,7 @@
 3. **Ridge dominates tech32**: IC 0.059–0.072 vs LightGBM -0.041–+0.036. The 32-stock
    tech universe is too small for LightGBM's tree-based approach to generalize.
 
-4. **tech100 is the most stable universe**: Both models maintain positive IC across all
+4. **tech90 is the most stable universe**: Both models maintain positive IC across all
    gates, with Ridge slightly stronger.
 
 5. **Information ablation ordering**: A2 (reduced) sometimes outperforms A1 (full) for
@@ -62,7 +62,7 @@
 - **Single seed**: No seed dispersion estimate. V0 used 3 seeds for deep models.
 - **Tabular only**: Deep models (iTransformer/FACT/TimePro/TimeXer) pending GPU
   recovery. V1 deep has 108 cells queued but blocked.
-- **EXPLORATORY universes**: tech32/tech100 have selection bias (2026-selected pools).
+- **EXPLORATORY universes**: tech32/tech90 have selection bias (2026-selected pools).
   Only CSI300 can produce formal results.
 
 ## Next Steps

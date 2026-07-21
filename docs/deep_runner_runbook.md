@@ -17,7 +17,7 @@ constructs a 2026/test loader during fitting, and never edits an author checkout
 - CSI300/STAR50 use fold-causal append-only identity. A 2025 identity unknown at
   the 2024 retrain cutoff remains in the complete PredictionFrame as
   `MODEL_UNSUPPORTED`.
-- tech32/tech100 retain their disclosed retrospective 2026 selection and can
+- tech32/tech90 retain their disclosed retrospective 2026 selection and can
   only emit `EXPLORATORY_ONLY` manifests.
 
 ## Job manifest

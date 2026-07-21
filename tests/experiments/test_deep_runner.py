@@ -98,7 +98,7 @@ def job(
         adapter_config=evidence("adapter.json"),
         common_config=evidence("common.json"),
         formal_feature_manifest=(
-            None if universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+            None if universe in {UniverseClass.TECH32, UniverseClass.TECH90}
             else evidence("formal.json")
         ),
     )
@@ -133,7 +133,7 @@ def test_v0_v1_gate_contract_and_technology_receipts() -> None:
         job(phase="V0", gate=InformationGate.A1)
     job(phase="V1", gate=InformationGate.A3)
     job(universe=UniverseClass.TECH32)
-    tech = job(universe=UniverseClass.TECH100)
+    tech = job(universe=UniverseClass.TECH90)
     with pytest.raises(ContractError, match="cannot claim a formal receipt"):
         DeepJobSpec(**{**tech.__dict__, "formal_feature_manifest": evidence("formal.json")})
 

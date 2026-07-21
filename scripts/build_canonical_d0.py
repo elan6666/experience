@@ -30,7 +30,7 @@ def main() -> int:
             csi300_codes=staged / "csi300_union_codes.json",
             star50_codes=staged / "star50_union_codes.json",
             tech32_codes=staged / "tech32_codes.json",
-            tech100_codes=staged / "tech100_codes.json",
+            tech90_codes=staged / "tech90_codes.json",
         ),
         cutoff_date=date.fromisoformat(args.cutoff),
     )

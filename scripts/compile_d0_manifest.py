@@ -138,7 +138,7 @@ def _stream_gate(
     elif universe is UniverseClass.STAR50 and not star50_history_complete:
         status = ResultState.BLOCKED
         warnings.append("official STAR50 historical membership is incomplete")
-    elif universe in {UniverseClass.TECH32, UniverseClass.TECH100}:
+    elif universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
         status = ResultState.EXPLORATORY_ONLY
         warnings.append("2026-selected universe; conditional-selection bias cannot be removed")
         if core_coverage < 0.995:

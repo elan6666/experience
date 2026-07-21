@@ -39,7 +39,7 @@ from a_share_research.evaluation.v0_scoring import (
 )
 
 _V1_RUN_ID = re.compile(
-    r"^v1-a([123])-(csi300|star50|tech32|tech100)-([a-z0-9]+)-seed-(\d{8})$"
+    r"^v1-a([123])-(csi300|star50|tech32|tech90)-([a-z0-9]+)-seed-(\d{8})$"
 )
 _FREQUENCY = EvaluationFrequency.WEEKLY
 _SUPPORTS = (SupportMode.COMMON, SupportMode.NATIVE)

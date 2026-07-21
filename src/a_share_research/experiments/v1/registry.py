@@ -26,9 +26,9 @@ from a_share_research.protocol.splits import Partition
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 MODELS = ("ridge", "lightgbm", "itransformer", "fact", "timepro", "timexer", "s4m")
-UNIVERSES = ("CSI300", "STAR50", "TECH32", "TECH100")
+UNIVERSES = ("CSI300", "STAR50", "TECH32", "TECH90")
 BLOCKED_LICENSE_MODELS = frozenset({"s4m"})
-EXPLORATORY_UNIVERSES = frozenset({"TECH32", "TECH100"})
+EXPLORATORY_UNIVERSES = frozenset({"TECH32", "TECH90"})
 
 
 class InformationSet(str, Enum):
@@ -259,7 +259,7 @@ class V1Registry(CanonicalModel):
             )
         exploratory = tuple(cell for cell in self.cells if cell.universe in EXPLORATORY_UNIVERSES)
         if any(cell.scope != "EXPLORATORY_ONLY" for cell in exploratory):
-            raise ContractError("tech32/tech100 must remain EXPLORATORY_ONLY")
+            raise ContractError("tech32/tech90 must remain EXPLORATORY_ONLY")
         if self.comparisons != FROZEN_COMPARISONS:
             raise ContractError("V1 comparison family is frozen and cannot expand after results")
         if self.selection_split is not Partition.VALIDATION:
@@ -392,7 +392,7 @@ def validate_v1_blueprint(blueprint: Mapping[str, Any]) -> None:
         raise ContractError("V1 blocked-license model set drifted")
     if tuple(blueprint.get("exploratory_only_universes", ())) != (
         "TECH32",
-        "TECH100",
+        "TECH90",
     ):
         raise ContractError("V1 exploratory universe set drifted")
     if tuple(blueprint.get("comparisons", ())) != (

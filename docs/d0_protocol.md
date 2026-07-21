@@ -1,11 +1,11 @@
 # D0 PIT data protocol
 
 This cycle builds one canonical causal panel for CSI300, STAR50, tech32 and
-tech100 before model-specific tensors are created.
+tech90 before model-specific tensors are created.
 
 - CSI300 and STAR50 use dated official membership snapshots. Missing STAR50
   history blocks formal ranking; latest constituents are never backfilled.
-- tech32 and tech100 preserve their 2026-07-17 selection provenance and remain
+- tech32 and tech90 preserve their 2026-07-17 selection provenance and remain
   `EXPLORATORY_ONLY`, even when their data pass all technical gates.
 - D0 retains raw values and independent missing flags. Imputation,
   winsorization, scaling and industry/size neutralization are fitted only in a

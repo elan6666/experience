@@ -31,7 +31,7 @@ patches/               上游兼容补丁（当前为空）
 ```
 
 D0 先运行只读 inventory audit，再生成有截断边界的请求清单。完整因果协议见
-`docs/d0_protocol.md`；tech32/tech100 永久保留 `EXPLORATORY_ONLY` 标签。
+`docs/d0_protocol.md`；tech32/tech90 永久保留 `EXPLORATORY_ONLY` 标签。
 
 ## 服务器验证（同步后执行）
 

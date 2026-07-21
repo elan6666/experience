@@ -152,7 +152,7 @@
         "_version": {"const": "1.0"},
         "run_id": {"type": "string", "minLength": 1},
         "model": {"type": "string", "minLength": 1},
-        "universe": {"enum": ["CSI300", "STAR50", "TECH32", "TECH100"]},
+        "universe": {"enum": ["CSI300", "STAR50", "TECH32", "TECH90"]},
         "information_set": {"enum": ["A0", "A1", "A2", "A3"]},
         "split": {"enum": ["TRAIN", "VALIDATION", "LEGACY_VIEWED", "FUTURE_UNSEEN"]},
         "purpose": {"enum": ["FIT", "SELECT", "LEGACY_REPORT", "FINAL_EVALUATION"]},

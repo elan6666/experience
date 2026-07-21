@@ -197,7 +197,7 @@ def _verify_canonical_and_registry(
         if expected is None or not path.is_file() or _sha256(path) != expected:
             raise ContractError(f"canonical D0 table is absent or unsealed: {relative}")
     memberships = _membership_intervals(canonical_root / relatives[0])
-    if universe in {UniverseClass.TECH32, UniverseClass.TECH100}:
+    if universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
         master = _technology_master(memberships, universe=universe)
     else:
         train_master = build_causal_asset_master(

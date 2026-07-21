@@ -79,7 +79,7 @@ def _fixture(
                     if universe is UniverseClass.STAR50
                     else (
                         ResultState.EXPLORATORY_ONLY
-                        if universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+                        if universe in {UniverseClass.TECH32, UniverseClass.TECH90}
                         else ResultState.PASS
                     )
                 ),
@@ -180,7 +180,7 @@ def test_v0_emits_24_cells_and_two_parallel_capable_serial_queues(
     assert all(
         job.formal_feature_manifest is None
         for job in generated.jobs
-        if job.universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+        if job.universe in {UniverseClass.TECH32, UniverseClass.TECH90}
     )
     assert all(
         job.formal_feature_manifest is not None

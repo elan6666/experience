@@ -54,7 +54,7 @@ _SUPPORTS = (SupportMode.COMMON, SupportMode.NATIVE)
 _OUTCOMES = (OutcomeMode.ABSOLUTE, OutcomeMode.BENCHMARK_RELATIVE)
 
 _RUN_ID_PATTERN = re.compile(
-    r"^v0-a0-(csi300|star50|tech32|tech100)-([a-z0-9]+)-seed-(\d{8})$"
+    r"^v0-a0-(csi300|star50|tech32|tech90)-([a-z0-9]+)-seed-(\d{8})$"
 )
 
 

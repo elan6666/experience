@@ -23,7 +23,7 @@ DEFAULT_CANDIDATES = {
     "historical_csi300": "data/processed/historical_csi300",
     "historical_star50": "data/processed/historical_star50",
     "tech32": "data/processed/tech32_open_to_open_v2",
-    "tech100": "data/processed/tech100",
+    "tech90": "data/processed/tech90",
 }
 
 

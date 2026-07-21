@@ -1,0 +1,14 @@
+{
+  "schema_version": "d0_universe_v1",
+  "universe": "TECH90",
+  "mode": "STATIC_SELECTED_2026",
+  "selection_date": "2026-07-21",
+  "source_workbook_name": "A股科技90_核心技术深度研究_2026-07-21.xlsx",
+  "source_preference": [
+    "data/processed/tech90",
+    "server-copied frozen workbook"
+  ],
+  "formal_status": "EXPLORATORY_ONLY",
+  "benchmark": "eligible_member_equal_weight",
+  "expected_count": 90
+}

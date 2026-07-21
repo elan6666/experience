@@ -45,7 +45,7 @@ under the parent research root and are not copied to Git.
    .venv/bin/python scripts/stage_d0_bootstrap.py \
      --research-root /data/yilangliu/a_share_research \
      --index-manifest /data/yilangliu/a_share_research/data/requests/d0-index-history-v1.json \
-     --tech100-workbook /data/yilangliu/a_share_research/data/raw/A股核心技术潜力Top100_2026-07-17.xlsx \
+     --tech90-workbook /data/yilangliu/a_share_research/data/raw/A股核心技术潜力Top100_2026-07-17.xlsx \
      --tech32-manifest /data/yilangliu/a_share_research/data/processed/tech32_open_to_open_v2/panel_manifest.json \
      --out-root /data/yilangliu/a_share_research/data/staged \
      --receipt /data/yilangliu/a_share_research/receipts/d0/bootstrap_staging_20260719.json
@@ -112,7 +112,7 @@ under the parent research root and are not copied to Git.
    Only CSI300/STAR50 gates in `PASS` or `PASS_WITH_WARNING` receive A0--A3
    `FormalFeatureManifest` files. A blocked STAR50 gate produces **no** STAR50
    manifest; its `NOT_GENERATED` decision and exact D0 status remain explicit
-   in `formal-feature-generation-audit.json`. Tech32/tech100 are never emitted
+   in `formal-feature-generation-audit.json`. Tech32/tech90 are never emitted
    by this command. All outputs are atomic and pre-existing receipt or `.tmp`
    paths cause a fail-closed rejection rather than replacement.
 

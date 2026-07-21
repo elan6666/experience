@@ -86,11 +86,11 @@ A1、A2、A3 收据。不传 A0，因为 V1 不重训 A0。
 ## V1 实际生成命令（2026-07-20 已验证，六模型/4 deep）
 
 V1 不重训 A0，仅生成 A1/A2/A3 消融 cell。源码变更后需先重建 source manifest
-（此处为 v7）。CSI300 有 A1-A3 正式特征回执；TECH32/TECH100 为 EXPLORATORY_ONLY
+（此处为 v7）。CSI300 有 A1-A3 正式特征回执；TECH32/TECH90 为 EXPLORATORY_ONLY
 不需正式回执即可入队；STAR50 被 D0 gate 阻断。
 
 结果：planned=144，blocked=36（全为 STAR50 D0_GATE_BLOCKED），runnable=108
-（CSI300/TECH32/TECH100 × A1/A2/A3 × 4 模型 × 3 seed），4 GPU 队列
+（CSI300/TECH32/TECH90 × A1/A2/A3 × 4 模型 × 3 seed），4 GPU 队列
 （GPU0: itransformer+timexer，GPU1: fact+timepro）。
 
 ```bash

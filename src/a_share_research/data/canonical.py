@@ -119,7 +119,7 @@ class CanonicalInputs:
     csi300_codes: Path
     star50_codes: Path
     tech32_codes: Path
-    tech100_codes: Path
+    tech90_codes: Path
 
 
 class CanonicalD0Materializer:
@@ -158,7 +158,7 @@ class CanonicalD0Materializer:
             UniverseClass.CSI300: self._load_codes(inputs.csi300_codes),
             UniverseClass.STAR50: self._load_codes(inputs.star50_codes),
             UniverseClass.TECH32: self._load_codes(inputs.tech32_codes),
-            UniverseClass.TECH100: self._load_codes(inputs.tech100_codes),
+            UniverseClass.TECH90: self._load_codes(inputs.tech90_codes),
         }
         self.all_codes = tuple(sorted(set().union(*map(set, self.codes.values()))))
         if self.all_codes != tuple(sorted(self._load_codes(inputs.union_codes))):
@@ -229,11 +229,11 @@ class CanonicalD0Materializer:
     def _membership_intervals(
         self, universe: UniverseClass
     ) -> tuple[MembershipInterval, ...]:
-        if universe in {UniverseClass.TECH32, UniverseClass.TECH100}:
+        if universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
             source_path = (
                 self.inputs.tech32_codes
                 if universe is UniverseClass.TECH32
-                else self.inputs.tech100_codes
+                else self.inputs.tech90_codes
             )
             return static_selected_intervals(
                 self.codes[universe],
@@ -898,7 +898,7 @@ class CanonicalD0Materializer:
                 "universe": universe.value,
                 "formal_status": (
                     "EXPLORATORY_ONLY"
-                    if universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+                    if universe in {UniverseClass.TECH32, UniverseClass.TECH90}
                     else "PENDING_GATE"
                 ),
                 "expected_member_dates": len(self.trading_dates),
@@ -945,7 +945,7 @@ class CanonicalD0Materializer:
                     "csi300_codes": self.inputs.csi300_codes,
                     "star50_codes": self.inputs.star50_codes,
                     "tech32_codes": self.inputs.tech32_codes,
-                    "tech100_codes": self.inputs.tech100_codes,
+                    "tech90_codes": self.inputs.tech90_codes,
                 }.items()
             },
             "shared_market_state_hash": state.stable_hash,

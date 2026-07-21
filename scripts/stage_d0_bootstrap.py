@@ -60,23 +60,23 @@ def _write_jsonl(path: Path, rows: tuple[dict[str, object], ...]) -> None:
     temporary.replace(path)
 
 
-def _tech100_codes(workbook: Path) -> tuple[str, ...]:
+def _tech90_codes(workbook: Path) -> tuple[str, ...]:
     book = load_workbook(workbook, read_only=True, data_only=True)
-    sheet = book["Top100"]
+    sheet = book["科技90"]
     rows = sheet.iter_rows(values_only=True)
     header = next(rows)
     code_index = header.index("代码")
-    rank_index = header.index("排名")
+    rank_index = header.index("总榜")
     codes: list[str] = []
     for row in rows:
         if row[rank_index] is None or row[code_index] is None:
             continue
         rank = int(row[rank_index])
-        if not 1 <= rank <= 100:
+        if not 1 <= rank <= 90:
             continue
         codes.append(str(row[code_index]).split(".", maxsplit=1)[0].zfill(6))
-    if len(codes) != 100 or len(set(codes)) != 100:
-        raise RuntimeError("Top100 workbook must yield exactly 100 unique codes")
+    if len(codes) != 90 or len(set(codes)) != 90:
+        raise RuntimeError("科技90 workbook must yield exactly 90 unique codes")
     return tuple(codes)
 
 
@@ -85,7 +85,7 @@ def main() -> int:
     parser.add_argument("--research-root", type=Path, required=True)
     parser.add_argument("--project-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--index-manifest", type=Path, required=True)
-    parser.add_argument("--tech100-workbook", type=Path, required=True)
+    parser.add_argument("--tech90-workbook", type=Path, required=True)
     parser.add_argument("--tech32-manifest", type=Path, required=True)
     parser.add_argument("--out-root", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
@@ -144,13 +144,13 @@ def main() -> int:
     tech32 = tuple(str(code) for code in tech32_document["tickers"])
     if len(tech32) != 32 or len(set(tech32)) != 32:
         raise RuntimeError("tech32 manifest must contain exactly 32 unique tickers")
-    tech100_bare = _tech100_codes(args.tech100_workbook)
-    missing_symbols = sorted(set(tech100_bare) - set(symbol_to_code))
+    tech90_bare = _tech90_codes(args.tech90_workbook)
+    missing_symbols = sorted(set(tech90_bare) - set(symbol_to_code))
     if missing_symbols:
-        raise RuntimeError(f"Top100 codes absent from security master: {missing_symbols}")
-    tech100 = tuple(symbol_to_code[code] for code in tech100_bare)
+        raise RuntimeError(f"科技90 codes absent from security master: {missing_symbols}")
+    tech90 = tuple(symbol_to_code[code] for code in tech90_bare)
 
-    universe_codes = tuple(sorted(csi300 | star50 | set(tech32) | set(tech100)))
+    universe_codes = tuple(sorted(csi300 | star50 | set(tech32) | set(tech90)))
     missing_identities = sorted(set(universe_codes) - set(raw_by_code))
     if missing_identities:
         raise RuntimeError(f"universe identities absent from security master: {missing_identities}")
@@ -163,7 +163,7 @@ def main() -> int:
         ("csi300_union_codes.json", sorted(csi300)),
         ("star50_union_codes.json", sorted(star50)),
         ("tech32_codes.json", list(tech32)),
-        ("tech100_codes.json", list(tech100)),
+        ("tech90_codes.json", list(tech90)),
         ("four_universe_union_codes.json", list(universe_codes)),
     ):
         (args.out_root / filename).write_text(
@@ -187,13 +187,13 @@ def main() -> int:
             "csi300_union": len(csi300),
             "star50_union": len(star50),
             "tech32": len(tech32),
-            "tech100": len(tech100),
+            "tech90": len(tech90),
             "four_universe_union": len(universe_codes),
         },
         "sources": {
             "index_manifest_sha256": _sha256(args.index_manifest),
             "tech32_manifest_sha256": _sha256(args.tech32_manifest),
-            "tech100_workbook_sha256": _sha256(args.tech100_workbook),
+            "tech90_workbook_sha256": _sha256(args.tech90_workbook),
         },
         "quarantined_invalid_identities": invalid_identities,
         "outputs": outputs,

@@ -52,7 +52,7 @@ def _d0(*, star50: D0GateState = D0GateState.PASS) -> D0Binding:
             ("CSI300", D0GateState.PASS),
             ("STAR50", star50),
             ("TECH32", D0GateState.EXPLORATORY_ONLY),
-            ("TECH100", D0GateState.EXPLORATORY_ONLY),
+            ("TECH90", D0GateState.EXPLORATORY_ONLY),
         ),
     )
 
@@ -79,7 +79,7 @@ def test_frozen_registry_is_exactly_28_core_only_cells() -> None:
     assert {(cell.model, cell.universe) for cell in registry.cells} == {
         (model, universe)
         for model in MODELS
-        for universe in ("CSI300", "STAR50", "TECH32", "TECH100")
+        for universe in ("CSI300", "STAR50", "TECH32", "TECH90")
     }
     assert {cell.information_set for cell in registry.cells} == {"A0"}
     assert {cell.information_groups for cell in registry.cells} == {("CORE",)}

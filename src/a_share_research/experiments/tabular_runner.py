@@ -240,7 +240,7 @@ def tabular_cell_config_hash(job: TabularJobSpec, d0: D0Manifest) -> str:
             "universe": job.universe.value,
             "scope": (
                 "EXPLORATORY_ONLY"
-                if job.universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+                if job.universe in {UniverseClass.TECH32, UniverseClass.TECH90}
                 else "FORMAL"
             ),
             "information_set": job.information_set.value,
@@ -759,7 +759,7 @@ class TabularCellRunner:
             item for item in prepared.d0.universe_gates if item.universe is job.universe
         )
         status = universe_gate.status
-        if job.universe in {UniverseClass.TECH32, UniverseClass.TECH100}:
+        if job.universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
             status = ResultState.EXPLORATORY_ONLY
         draft = RunManifest(
             run_id=job.run_id,

@@ -22,7 +22,7 @@ class UniverseClass(str, Enum):
     CSI300 = "CSI300"
     STAR50 = "STAR50"
     TECH32 = "TECH32"
-    TECH100 = "TECH100"
+    TECH90 = "TECH90"
 
 
 class Purpose(str, Enum):

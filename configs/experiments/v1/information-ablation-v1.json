@@ -20,7 +20,7 @@
     "CSI300",
     "STAR50",
     "TECH32",
-    "TECH100"
+    "TECH90"
   ],
   "information_sets": {
     "A0": [
@@ -107,7 +107,7 @@
   "blocked_license_models": ["s4m"],
   "exploratory_only_universes": [
     "TECH32",
-    "TECH100"
+    "TECH90"
   ],
   "comparisons": [
     "A1-A0",

@@ -193,7 +193,7 @@ def _write_fixture(tmp_path: Path) -> tuple[TabularJobSpec, Path]:
                 universe=universe,
                 status=(
                     ResultState.EXPLORATORY_ONLY
-                    if universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+                    if universe in {UniverseClass.TECH32, UniverseClass.TECH90}
                     else ResultState.PASS
                 ),
                 membership_coverage=1.0,

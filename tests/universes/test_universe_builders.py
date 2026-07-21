@@ -43,7 +43,7 @@ def test_dynamic_membership_refuses_uncovered_history() -> None:
 
 def test_technology_lists_are_permanently_exploratory() -> None:
     spec = UniverseSpec(
-        universe=UniverseClass.TECH100,
+        universe=UniverseClass.TECH90,
         mode=UniverseMode.STATIC_SELECTED_2026,
         benchmark_code=None,
         source="frozen-workbook",

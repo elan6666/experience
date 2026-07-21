@@ -30,7 +30,7 @@ _EXPECTED_MODELS = (
     "timexer",
     "s4m",
 )
-_EXPECTED_UNIVERSES = ("CSI300", "STAR50", "TECH32", "TECH100")
+_EXPECTED_UNIVERSES = ("CSI300", "STAR50", "TECH32", "TECH90")
 _BLOCKED_MODELS = frozenset({"s4m"})
 _DEEP_MODELS = frozenset({"itransformer", "fact", "timepro", "timexer", "s4m"})
 _TERMINAL_STATES = frozenset(

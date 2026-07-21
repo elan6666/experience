@@ -344,7 +344,7 @@ def test_run_context_prevents_legacy_or_selected_universe_ranking() -> None:
     assert not is_candidate_state(
         ResultState.PASS,
         partition=Partition.VALIDATION,
-        universe=UniverseClass.TECH100,
+        universe=UniverseClass.TECH90,
     )
 
 

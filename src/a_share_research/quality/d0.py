@@ -98,7 +98,7 @@ def assess_universe_gate(
     elif membership_coverage < 1.0 or core_coverage < 0.995:
         status = ResultState.BLOCKED
         warnings.append("membership/core coverage is below the formal D0 threshold")
-    elif universe in {UniverseClass.TECH32, UniverseClass.TECH100}:
+    elif universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
         status = ResultState.EXPLORATORY_ONLY
         warnings.append("2026-selected universe; conditional-selection bias cannot be removed")
     else:

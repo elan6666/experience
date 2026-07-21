@@ -70,7 +70,7 @@
       "properties": {
         "_schema": {"const": "d0_universe_gate"},
         "_version": {"const": "1.0"},
-        "universe": {"enum": ["CSI300", "STAR50", "TECH32", "TECH100"]},
+        "universe": {"enum": ["CSI300", "STAR50", "TECH32", "TECH90"]},
         "status": {
           "enum": ["PASS", "PASS_WITH_WARNING", "EXPLORATORY_ONLY", "BLOCKED", "INVALID_DATA"]
         },

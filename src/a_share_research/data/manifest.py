@@ -62,7 +62,7 @@ class UniverseGate(CanonicalModel):
         }
         if self.status not in allowed:
             raise ContractError("D0 universe gate has a non-data result state")
-        if self.universe in {UniverseClass.TECH32, UniverseClass.TECH100}:
+        if self.universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
             if self.status in {
                 ResultState.PASS,
                 ResultState.PASS_WITH_WARNING,

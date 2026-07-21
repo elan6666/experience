@@ -118,7 +118,7 @@ def test_d0_manifest_round_trip_requires_all_four_universes_and_http_notice() ->
             universe=universe,
             status=(
                 ResultState.EXPLORATORY_ONLY
-                if universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+                if universe in {UniverseClass.TECH32, UniverseClass.TECH90}
                 else ResultState.PASS
             ),
             membership_coverage=1.0,

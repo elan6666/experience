@@ -31,7 +31,7 @@ def is_candidate_state(
         raise TypeError("is_candidate_state requires typed Partition and UniverseClass context")
     if partition is Partition.LEGACY_VIEWED:
         return False
-    if universe in {UniverseClass.TECH32, UniverseClass.TECH100}:
+    if universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
         return False
     return state in {
         ResultState.PASS,

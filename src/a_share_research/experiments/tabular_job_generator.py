@@ -214,7 +214,7 @@ def _cell_payload(
         "universe": universe.value,
         "scope": (
             "EXPLORATORY_ONLY"
-            if universe in {UniverseClass.TECH32, UniverseClass.TECH100}
+            if universe in {UniverseClass.TECH32, UniverseClass.TECH90}
             else "FORMAL"
         ),
         "information_set": information_set.value,

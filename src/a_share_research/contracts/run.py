@@ -95,7 +95,7 @@ class RunManifest(CanonicalModel):
             ResultState.VALID_NEGATIVE,
         }:
             raise ContractError("LEGACY_VIEWED result cannot carry a rankable state")
-        if self.universe in {UniverseClass.TECH32, UniverseClass.TECH100} and self.status in {
+        if self.universe in {UniverseClass.TECH32, UniverseClass.TECH90} and self.status in {
             ResultState.PASS,
             ResultState.PASS_WITH_WARNING,
             ResultState.VALID_NEGATIVE,
@@ -109,7 +109,7 @@ class RunManifest(CanonicalModel):
         formal_context = (
             candidate_status
             and self.split is not Partition.LEGACY_VIEWED
-            and self.universe not in {UniverseClass.TECH32, UniverseClass.TECH100}
+            and self.universe not in {UniverseClass.TECH32, UniverseClass.TECH90}
         )
         if formal_context and self.purpose not in {Purpose.SELECT, Purpose.FINAL_EVALUATION}:
             raise ContractError("rankable manifest has an incompatible purpose")

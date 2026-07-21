@@ -75,7 +75,7 @@ def test_existing_data_audit_drives_incremental_gaps_only() -> None:
 
 def test_incremental_plan_admits_bounded_industry_pit_requests() -> None:
     inventory = (
-        ExistingDataset("tech100", Path("/server/tech100"), False, None),
+        ExistingDataset("tech90", Path("/server/tech90"), False, None),
     )
     request = QueryRequest(
         endpoint="index_member_all",

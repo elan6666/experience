@@ -1,7 +1,7 @@
 # V0/A0 orchestration contract
 
 V0 is pre-registered as exactly 28 logical cells: seven named models across
-CSI300, STAR50, tech32 and tech100.  The registry is Core-only (`A0`), predicts
+CSI300, STAR50, tech32 and tech90.  The registry is Core-only (`A0`), predicts
 the future five trading days at weekly frequency, and enters at the next
 tradable open (`T+1_OPEN`).  Training is fixed to 2019--2024 and model selection
 is fixed to 2025 validation.  The already viewed 2026-01-01 through 2026-07-17
@@ -24,7 +24,7 @@ permission to execute.
    receipts. A blocked-license cell stays blocked even if a caller supplies
    other evidence.
 
-STAR50 inherits its D0 gate. Tech32 and tech100 may run only as exploratory
+STAR50 inherits its D0 gate. Tech32 and tech90 may run only as exploratory
 pools; later result contracts retain that classification. No execution unit is
 created for a blocked cell.
 

@@ -75,7 +75,7 @@ _EXPECTED_COMMITS = {
     "s4m": "a718823addd3606e763dfc261174e0135b2535f4",
 }
 _PHYSICAL_GPUS = {"itransformer": 0, "fact": 1, "timexer": 0, "timepro": 1, "s4m": 0}
-_TECH_UNIVERSES = {UniverseClass.TECH32, UniverseClass.TECH100}
+_TECH_UNIVERSES = {UniverseClass.TECH32, UniverseClass.TECH90}
 _FORBIDDEN_AUTHOR_ARGUMENTS = {
     "seq_len",
     "pred_len",

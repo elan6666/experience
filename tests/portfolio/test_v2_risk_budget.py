@@ -82,7 +82,7 @@ def test_same_schedule_scales_any_consumer_without_coverage_dependent_budget() -
     tech = apply_shared_risk_budget(
         always_full_targets=always_full,
         schedule=schedule,
-        output_run_id="b1-tech100-fact",
+        output_run_id="b1-tech90-fact",
     )
     assert csi.cash_weight_by_date == tech.cash_weight_by_date
     assert tuple(csi.cash_weight_by_date.values()) == pytest.approx((0.0, 0.4, 0.7, 1.0))

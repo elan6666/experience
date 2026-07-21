@@ -30,7 +30,7 @@ from a_share_research.protocol import Partition
 
 HASH = "a" * 64
 MODELS = ("ridge", "lightgbm", "itransformer", "fact", "timepro", "timexer", "s4m")
-UNIVERSES = ("CSI300", "STAR50", "TECH32", "TECH100")
+UNIVERSES = ("CSI300", "STAR50", "TECH32", "TECH90")
 BLOCKED = {"s4m"}
 DEEP = {"itransformer", "fact", "timepro", "timexer", "s4m"}
 
@@ -201,7 +201,7 @@ def test_shared_market_state_blocked_models_and_exploratory_pools_are_typed() ->
     assert {
         cell.action for cell in blocked if cell.information_set is not InformationSet.A0
     } == {CellAction.RECORD_BLOCK}
-    exploratory = [cell for cell in result.cells if cell.universe in {"TECH32", "TECH100"}]
+    exploratory = [cell for cell in result.cells if cell.universe in {"TECH32", "TECH90"}]
     assert {cell.scope for cell in exploratory} == {"EXPLORATORY_ONLY"}
     assert {
         cell.disposition for cell in exploratory if cell.model not in BLOCKED

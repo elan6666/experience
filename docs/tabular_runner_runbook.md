@@ -13,7 +13,7 @@ The job manifest binds exact D0, environment, code, model-config and layout
 files by absolute path and SHA-256. It also binds the D0 content/table hashes,
 the causal append-only validation asset registry, shared CSI300 market state,
 cell config, estimator package pin and (for formal universes) the formal D0
-feature-eligibility receipt hash. Tech32 and tech100 remain
+feature-eligibility receipt hash. Tech32 and tech90 remain
 `EXPLORATORY_ONLY` regardless of model output.
 
 A successful run publishes one output directory atomically. It contains:
@@ -63,7 +63,7 @@ receipts. Therefore each affected CSI300/STAR50 cell is recorded as a typed
 independently reviewed its receipt. Never substitute a gate hash,
 feature-schema hash, arbitrary 64-character string, or a receipt derived after
 seeing model results. A blocked formal cell does not prevent the other
-universes from being generated. Tech32/tech100 do not receive formal receipts
+universes from being generated. Tech32/tech90 do not receive formal receipts
 and remain `EXPLORATORY_ONLY`.
 
 Likewise, `BLOCKED`/`INVALID_DATA` D0 gates or rejected canonical table hashes

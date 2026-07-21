@@ -8,10 +8,10 @@ A1/A2/A3 training intents.
 ## Frozen matrix
 
 - Models: Ridge, LightGBM, iTransformer, FACT, TimePro, TimeXer and S4M.
-- Universes: CSI300, STAR50, tech32 and tech100; each remains a separate panel.
+- Universes: CSI300, STAR50, tech32 and tech90; each remains a separate panel.
 - Gates: A0=`Core`, A1=`Core+F+F-missing`, A2=`Core+S`,
   A3=`Core+F+F-missing+S`.
-- tech32 and tech100 remain `EXPLORATORY_ONLY` and cannot produce a formal
+- tech32 and tech90 remain `EXPLORATORY_ONLY` and cannot produce a formal
   winner. This label does not override a stronger `BLOCKED_LICENSE` reason.
 - TimePro, TimeXer and S4M remain `BLOCKED_LICENSE` for all four gates and all
   four universes. A1-A3 rows for them record the block; they do not emulate or

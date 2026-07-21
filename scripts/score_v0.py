@@ -33,7 +33,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--universes",
         nargs="+",
-        default=["csi300", "tech32", "tech100"],
+        default=["csi300", "tech32", "tech90"],
     )
     args = parser.parse_args(argv)
     args.output_dir.mkdir(parents=True, exist_ok=True)
