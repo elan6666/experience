@@ -214,8 +214,8 @@ def _hyperparameters(model: str) -> DeepHyperparameters:
     common: dict[str, object] = {
         "use_norm": 1,
         "freq": "h",
-        "d_model": 64,
-        "d_ff": 128,
+        "d_model": 512,
+        "d_ff": 2048,
         "dropout": 0.1,
         "lradj": "type1",
     }
@@ -235,9 +235,10 @@ def _hyperparameters(model: str) -> DeepHyperparameters:
         common.update(
             {
                 "task_name": "long_term_forecast",
-                "freq": "w",
-                "dilation": [1, 2],
-                "num_kernels": 6,
+                "freq": "n",
+                "d_ff": 1024,
+                "dilation": [1, 2, 3, 2, 1],
+                "num_kernels": 4,
                 "core": 0.5,
             }
         )
@@ -257,8 +258,8 @@ def _hyperparameters(model: str) -> DeepHyperparameters:
     elif model == "timepro":
         common.update(
             {
-                "patch_len": 8,
-                "stride": 4,
+                "patch_len": 12,
+                "stride": 6,
                 "e_layers": 2,
             }
         )
@@ -294,13 +295,13 @@ def _hyperparameters(model: str) -> DeepHyperparameters:
         )
     else:
         raise ContractError(f"unsupported deep model: {model}")
-    batch_size = 32 if model == "s4m" else 8
-    learning_rate = 0.001 if model == "s4m" else 0.0001
+    batch_size = 32
+    learning_rate = 0.001 if model in {"fact", "s4m"} else 0.0001
     return DeepHyperparameters(
         lookback_weeks=96,
         forecast_steps=1,
         batch_size=batch_size,
-        maximum_epochs=100,
+        maximum_epochs=10,
         patience=3,
         learning_rate=learning_rate,
         author_arguments=common,

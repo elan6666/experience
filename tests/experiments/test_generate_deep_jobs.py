@@ -17,6 +17,7 @@ from a_share_research.experiments.deep_job_generator import (
     COMMITS,
     MODELS,
     PHYSICAL_GPUS,
+    _hyperparameters,
     build_deep_jobs,
     write_deep_jobs,
 )
@@ -59,9 +60,7 @@ def _fixture(
             ).hexdigest()
     market = canonical / "shared_market_state.jsonl"
     market.write_text("shared-market-state\n", encoding="utf-8")
-    canonical_hashes["shared_market_state.jsonl"] = hashlib.sha256(
-        market.read_bytes()
-    ).hexdigest()
+    canonical_hashes["shared_market_state.jsonl"] = hashlib.sha256(market.read_bytes()).hexdigest()
     d0 = D0Manifest(
         dataset_id="d0-deep-generator-test",
         created_at_utc=datetime(2026, 7, 19, tzinfo=timezone.utc),
@@ -193,8 +192,7 @@ def test_v0_emits_24_cells_and_two_parallel_capable_serial_queues(
         for model, path in args["environment_receipts"].items()
     }
     assert all(
-        job.environment_receipt.sha256 == environment_hashes[job.model]
-        for job in generated.jobs
+        job.environment_receipt.sha256 == environment_hashes[job.model] for job in generated.jobs
     )
 
 
@@ -236,9 +234,7 @@ def test_missing_formal_receipt_blocks_only_one_universe_gate_family(
     generated = build_deep_jobs(phase="V1", **args)
     assert len(generated.jobs) == 132
     assert len(generated.blocked_cells) == 12
-    assert {
-        (cell.universe, cell.gate, cell.reason_code) for cell in generated.blocked_cells
-    } == {
+    assert {(cell.universe, cell.gate, cell.reason_code) for cell in generated.blocked_cells} == {
         (
             UniverseClass.CSI300,
             InformationGate.A2,
@@ -285,3 +281,88 @@ def test_exact_model_evidence_mappings_are_required(
     args["integrity_receipts"].pop("fact")
     with pytest.raises(ContractError, match="exact integrity mappings"):
         build_deep_jobs(phase="V0", **args)
+
+
+def test_deep_hyperparameters_align_with_upstream_argparse_defaults() -> None:
+    """Pin deep-model hyperparameters to each pinned upstream run.py default.
+
+    Regression guard for the 2026-07-21 alignment audit (DECISIONS.md): the
+    shared deep config must match the four active upstream argparse defaults so
+    a silent downgrade (e.g. d_model 512 -> 64) cannot ship again.
+    """
+    training = {
+        "itransformer": (32, 10, 0.0001),
+        "fact": (32, 10, 0.001),
+        "timexer": (32, 10, 0.0001),
+        "timepro": (32, 10, 0.0001),
+    }
+    expected_arguments: dict[str, dict[str, object]] = {
+        "itransformer": {
+            "d_model": 512,
+            "d_ff": 2048,
+            "dropout": 0.1,
+            "lradj": "type1",
+            "use_norm": 1,
+            "freq": "h",
+            "e_layers": 2,
+            "n_heads": 8,
+            "factor": 1,
+            "embed": "timeF",
+            "activation": "gelu",
+            "output_attention": False,
+            "class_strategy": "projection",
+        },
+        "fact": {
+            "d_model": 512,
+            "d_ff": 1024,
+            "dropout": 0.1,
+            "lradj": "type1",
+            "use_norm": 1,
+            "freq": "n",
+            "task_name": "long_term_forecast",
+            "dilation": [1, 2, 3, 2, 1],
+            "num_kernels": 4,
+            "core": 0.5,
+        },
+        "timexer": {
+            "d_model": 512,
+            "d_ff": 2048,
+            "dropout": 0.1,
+            "lradj": "type1",
+            "use_norm": 1,
+            "freq": "h",
+            "task_name": "long_term_forecast",
+            "features": "M",
+            "patch_len": 16,
+            "embed": "timeF",
+            "factor": 1,
+            "n_heads": 8,
+            "e_layers": 2,
+            "activation": "gelu",
+        },
+        "timepro": {
+            "d_model": 512,
+            "d_ff": 2048,
+            "dropout": 0.1,
+            "lradj": "type1",
+            "use_norm": 1,
+            "freq": "h",
+            "patch_len": 12,
+            "stride": 6,
+            "e_layers": 2,
+        },
+    }
+    for model in ("itransformer", "fact", "timexer", "timepro"):
+        hyper = _hyperparameters(model)
+        batch_size, maximum_epochs, learning_rate = training[model]
+        assert hyper.batch_size == batch_size
+        assert hyper.maximum_epochs == maximum_epochs
+        assert hyper.learning_rate == learning_rate
+        assert hyper.patience == 3
+        assert hyper.lookback_weeks == 96
+        assert hyper.forecast_steps == 1
+        arguments = dict(hyper.author_arguments)
+        for key, value in expected_arguments[model].items():
+            assert arguments.get(key) == value, (
+                f"{model} author_argument {key}={arguments.get(key)!r} expected {value!r}"
+            )
