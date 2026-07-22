@@ -59,6 +59,7 @@ class ExactRawCatalog:
         self.request_manifest = request_manifest.resolve()
         self.document = document
         self.requests = tuple(requests)
+        self._request_hashes = frozenset(hashes)
         self._evidence: dict[str, RawPartitionEvidence] = {}
 
     def matching(
@@ -80,7 +81,7 @@ class ExactRawCatalog:
         return tuple(sorted(matches, key=lambda request: request.request_hash))
 
     def _paths(self, request: QueryRequest) -> tuple[Path, Path]:
-        if request.request_hash not in {item.request_hash for item in self.requests}:
+        if request.request_hash not in self._request_hashes:
             raise ContractError("request was not declared by the exact manifest")
         target = (
             self.raw_root
@@ -135,6 +136,21 @@ class ExactRawCatalog:
 
     def rows(self, request: QueryRequest) -> tuple[dict[str, object], ...]:
         return tuple(self.iter_rows(request))
+
+    def missing_partition_requests(self) -> tuple[QueryRequest, ...]:
+        """Return every declared request whose two immutable files are absent.
+
+        This preflight intentionally checks only file presence.  Content and
+        row-count validation remains fail-closed in :meth:`iter_rows`, but a
+        D0 operator can now obtain the complete fetch queue instead of fixing
+        one missing partition per rebuild attempt.
+        """
+        missing: list[QueryRequest] = []
+        for request in self.requests:
+            manifest_path, rows_path = self._paths(request)
+            if not manifest_path.is_file() or not rows_path.is_file():
+                missing.append(request)
+        return tuple(sorted(missing, key=lambda request: request.request_hash))
 
     def require_all_partitions(self) -> tuple[RawPartitionEvidence, ...]:
         for request in self.requests:

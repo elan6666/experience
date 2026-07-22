@@ -67,6 +67,38 @@ def test_exact_raw_catalog_rejects_tampered_embedded_hash(tmp_path) -> None:
         ExactRawCatalog(raw_root=tmp_path / "raw" / "d0_v1", request_manifest=manifest)
 
 
+def test_exact_raw_catalog_lists_all_missing_partition_requests(tmp_path) -> None:
+    present = _request("000001.SZ")
+    missing_first = _request("000002.SZ")
+    missing_second = _request("000003.SZ")
+    store = ImmutableRawStore(tmp_path / "raw" / "d0_v1")
+    store.store(
+        QueryResult(
+            present,
+            ({"ts_code": "000001.SZ", "trade_date": "20250102", "open": 10.0},),
+        )
+    )
+    manifest = tmp_path / "requests.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "bounded_requests": [
+                    _manifest_item(present),
+                    _manifest_item(missing_first),
+                    _manifest_item(missing_second),
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    catalog = ExactRawCatalog(raw_root=tmp_path / "raw" / "d0_v1", request_manifest=manifest)
+
+    assert {request.request_hash for request in catalog.missing_partition_requests()} == {
+        missing_first.request_hash,
+        missing_second.request_hash,
+    }
+
+
 def test_weekly_signal_dates_are_last_observed_trade_of_each_week() -> None:
     dates = (
         date(2025, 1, 2),
