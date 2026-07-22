@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from a_share_research.contracts import ContractError, MarketState, canonical_hash
+from a_share_research.contracts.data import MARKET_STATE_SOURCE_UNIVERSES
 
 
 @dataclass(frozen=True)
@@ -43,8 +44,13 @@ class SharedMarketState:
     def __post_init__(self) -> None:
         if not self.rows:
             raise ContractError("shared market state cannot be empty")
-        if any(row.source_universe != "CSI300" for row in self.rows):
-            raise ContractError("market state must be CSI300-only")
+        bad = {
+            r.source_universe
+            for r in self.rows
+            if r.source_universe not in MARKET_STATE_SOURCE_UNIVERSES
+        }
+        if bad:
+            raise ContractError(f"market-state source_universe not recognised: {bad}")
         for value in (self.source_membership_hash, self.trading_calendar_hash):
             if len(value) != 64:
                 raise ContractError("shared market-state evidence must be SHA-256")
@@ -77,6 +83,64 @@ def _returns(values: tuple[float, ...]) -> tuple[float, ...]:
     return tuple(math.log(current / previous) for previous, current in zip(values, values[1:]))
 
 
+# A-share broad indices for enriched S-group market-state features.
+# 000300.SH is excluded (already captured by csi300_* member-level features).
+INDEX_FEATURE_INDICES: tuple[str, ...] = (
+    "000001.SH",  # 上证综指
+    "399001.SZ",  # 深证成指
+    "000688.SH",  # 科创50
+    "399006.SZ",  # 创业板指
+    "000905.SH",  # 中证500
+    "000852.SH",  # 中证1000
+)
+
+INDEX_FEATURE_NAMES: tuple[str, ...] = ("trend_20d", "volatility_20d", "return_5d")
+
+
+def _index_feature_name(index_code: str, feature: str) -> str:
+    """Map an index code to a schema feature name, e.g. 000001.SH -> idx_000001_trend_20d."""
+    numeric = index_code.split(".")[0]
+    return f"idx_{numeric}_{feature}"
+
+
+def build_index_state_rows(
+    *,
+    trading_dates: tuple[date, ...],
+    index_closes: Mapping[str, Mapping[date, float]],
+    lookback: int = 20,
+) -> tuple[MarketState, ...]:
+    """Compute per-index trend/volatility/return rows for the enriched S group."""
+    if lookback < 2:
+        raise ContractError("index-state lookback must be >= 2")
+    rows: list[MarketState] = []
+    for index_code, closes in index_closes.items():
+        if index_code not in MARKET_STATE_SOURCE_UNIVERSES:
+            raise ContractError(f"index {index_code} is not a recognised market-state source")
+        for pos in range(lookback, len(trading_dates)):
+            day = trading_dates[pos]
+            window = trading_dates[pos - lookback : pos + 1]
+            prices = tuple(closes.get(d) for d in window)
+            if any(pr is None or pr <= 0 for pr in prices):
+                continue
+            rets = _returns(prices)
+            trend = math.log(prices[-1] / prices[0])
+            vol = statistics.pstdev(rets) if len(rets) > 1 else 0.0
+            # 5-day return (need at least 6 prices in the window tail)
+            short_window = window[-6:] if len(window) >= 6 else None
+            if short_window and all(closes.get(d) and closes[d] > 0 for d in short_window):
+                ret5 = math.log(closes[short_window[-1]] / closes[short_window[0]])
+            else:
+                continue
+            day_hash = canonical_hash({"day": day, "index": index_code, "close_window": prices})
+            for feature, value in (
+                (_index_feature_name(index_code, "trend_20d"), trend),
+                (_index_feature_name(index_code, "volatility_20d"), vol),
+                (_index_feature_name(index_code, "return_5d"), ret5),
+            ):
+                rows.append(MarketState(day, feature, value, index_code, day_hash))
+    return tuple(rows)
+
+
 def build_shared_market_state(
     *,
     trading_dates: tuple[date, ...],
@@ -89,6 +153,7 @@ def build_shared_market_state(
     source_membership_hash: str,
     lookback: int = 20,
     min_industry_coverage: float = 0.8,
+    index_closes: Mapping[str, Mapping[date, float]] | None = None,
 ) -> SharedMarketState:
     if lookback < 2 or tuple(sorted(set(trading_dates))) != trading_dates:
         raise ContractError("market-state calendar/lookback is invalid")
@@ -156,8 +221,7 @@ def build_shared_market_state(
             for code, value in classified_returns.items():
                 industry_values[today_industry[code]].append(value)
             industry_means = tuple(
-                statistics.fmean(industry_returns)
-                for industry_returns in industry_values.values()
+                statistics.fmean(industry_returns) for industry_returns in industry_values.values()
             )
             values["industry_dispersion"] = (
                 statistics.pstdev(industry_means) if len(industry_means) > 1 else 0.0
@@ -176,6 +240,14 @@ def build_shared_market_state(
         rows.extend(
             MarketState(day, name, value, "CSI300", day_source_hash)
             for name, value in sorted(values.items())
+        )
+    if index_closes:
+        rows.extend(
+            build_index_state_rows(
+                trading_dates=trading_dates,
+                index_closes=index_closes,
+                lookback=lookback,
+            )
         )
     return SharedMarketState(
         tuple(rows), source_membership_hash, calendar_hash, tuple(coverage_rows)

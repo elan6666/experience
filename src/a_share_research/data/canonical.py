@@ -29,7 +29,11 @@ from a_share_research.data.industry import (
     numeric_industry_id,
 )
 from a_share_research.data.labels import build_compact_open_labels
-from a_share_research.data.market_state import SharedMarketState, build_shared_market_state
+from a_share_research.data.market_state import (
+    INDEX_FEATURE_INDICES,
+    SharedMarketState,
+    build_shared_market_state,
+)
 from a_share_research.data.normalization import normalize_daily_market, parse_provider_date
 from a_share_research.data.raw_catalog import ExactRawCatalog
 from a_share_research.features.availability import signal_cutoff
@@ -226,9 +230,7 @@ class CanonicalD0Materializer:
             raise ContractError(f"request manifest lacks required {endpoint} partition")
         return tuple(row for request in requests for row in self.catalog.iter_rows(request))
 
-    def _membership_intervals(
-        self, universe: UniverseClass
-    ) -> tuple[MembershipInterval, ...]:
+    def _membership_intervals(self, universe: UniverseClass) -> tuple[MembershipInterval, ...]:
         if universe in {UniverseClass.TECH32, UniverseClass.TECH90}:
             source_path = (
                 self.inputs.tech32_codes
@@ -251,14 +253,10 @@ class CanonicalD0Materializer:
         if not snapshots:
             raise ContractError(f"{universe.value} has no historical membership snapshots")
         prior = tuple(day for day in snapshots if day <= self.trading_dates[0])
-        retained_dates = (
-            ((max(prior),) if prior else ())
-            + tuple(day for day in sorted(snapshots) if day > self.trading_dates[0])
+        retained_dates = ((max(prior),) if prior else ()) + tuple(
+            day for day in sorted(snapshots) if day > self.trading_dates[0]
         )
-        immutable = {
-            day: tuple(sorted(snapshots[day]))
-            for day in retained_dates
-        }
+        immutable = {day: tuple(sorted(snapshots[day])) for day in retained_dates}
         # Never project the first known composition backwards.  Pre-snapshot
         # dates remain uncovered and will therefore block a formal gate.
         covered_calendar = tuple(day for day in self.trading_dates if day >= min(immutable))
@@ -285,9 +283,7 @@ class CanonicalD0Materializer:
             )
             states = {str(request.params.get("is_new", "")) for request in requests}
             if states != {"Y", "N"}:
-                raise ContractError(
-                    f"{code} requires bounded index_member_all Y and N partitions"
-                )
+                raise ContractError(f"{code} requires bounded index_member_all Y and N partitions")
             rows = tuple(row for request in requests for row in self.catalog.iter_rows(request))
             self._industry_intervals[code] = build_industry_intervals(
                 rows=rows,
@@ -306,9 +302,7 @@ class CanonicalD0Materializer:
             start = parse_provider_date(row["start_date"])
             end_value = row.get("end_date")
             end = (
-                parse_provider_date(end_value)
-                if end_value not in (None, "")
-                else self.cutoff_date
+                parse_provider_date(end_value) if end_value not in (None, "") else self.cutoff_date
             )
             ann_value = row.get("ann_date")
             if ann_value not in (None, ""):
@@ -336,9 +330,8 @@ class CanonicalD0Materializer:
         receipt_path = target.with_suffix(".receipt.json")
         if target.is_file() and receipt_path.is_file():
             receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-            if (
-                receipt.get("input_hash") == input_hash
-                and receipt.get("output_hash") == _sha256(target)
+            if receipt.get("input_hash") == input_hash and receipt.get("output_hash") == _sha256(
+                target
             ):
                 return tuple(
                     DailyMarket.from_dict(json.loads(line))
@@ -350,9 +343,7 @@ class CanonicalD0Materializer:
             ("trade_date",),
         )
         basics = _unique_rows(
-            self._raw_rows(
-                "daily_basic", param_name="ts_code", param_value=code, required=False
-            ),
+            self._raw_rows("daily_basic", param_name="ts_code", param_value=code, required=False),
             ("trade_date",),
         )
         adjustments = _unique_rows(
@@ -423,9 +414,7 @@ class CanonicalD0Materializer:
         self, csi_intervals: tuple[MembershipInterval, ...]
     ) -> SharedMarketState:
         active_by_day = {
-            day: frozenset(
-                interval.ts_code for interval in csi_intervals if _active(interval, day)
-            )
+            day: frozenset(interval.ts_code for interval in csi_intervals if _active(interval, day))
             for day in self.trading_dates
         }
         member_returns: dict[date, dict[str, float]] = defaultdict(dict)
@@ -446,6 +435,14 @@ class CanonicalD0Materializer:
                 if index > 0 and rows[index - 1].turnover is not None:
                     member_turnover[row.trade_date][code] = float(rows[index - 1].turnover)
         _, index_close = self._index_prices("000300.SH")
+        # Load additional A-share broad indices for enriched S-group features.
+        index_closes: dict[str, dict[date, float]] = {}
+        for index_code in INDEX_FEATURE_INDICES:
+            try:
+                _, closes = self._index_prices(index_code)
+                index_closes[index_code] = closes
+            except (KeyError, ContractError, FileNotFoundError):
+                pass  # index data not yet downloaded; skip gracefully
         industries = industry_by_date(
             intervals=(
                 interval
@@ -464,6 +461,7 @@ class CanonicalD0Materializer:
             member_industry_by_date=industries,
             eligible_member_codes_by_date=active_by_day,
             source_membership_hash=canonical_hash(csi_intervals),
+            index_closes=index_closes if index_closes else None,
         )
         _atomic_jsonl(self.output_root / "shared_market_state.jsonl", state.rows)
         _atomic_json(
@@ -479,9 +477,7 @@ class CanonicalD0Materializer:
                     else "MISSING_INSUFFICIENT_PIT_COVERAGE"
                 ),
                 "industry_coverage_threshold": (
-                    state.industry_coverage[0].threshold
-                    if state.industry_coverage
-                    else 0.8
+                    state.industry_coverage[0].threshold if state.industry_coverage else 0.8
                 ),
                 "industry_coverage": [
                     {
@@ -644,8 +640,7 @@ class CanonicalD0Materializer:
         if receipt_path.is_file() and all((shard / name).is_file() for name in outputs):
             receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
             if receipt.get("input_hash") == shard_input_hash and all(
-                receipt.get("outputs", {}).get(name) == _sha256(shard / name)
-                for name in outputs
+                receipt.get("outputs", {}).get(name) == _sha256(shard / name) for name in outputs
             ):
                 return shard
         shard.mkdir(parents=True, exist_ok=True)
@@ -659,9 +654,7 @@ class CanonicalD0Materializer:
             year_signals = tuple(day for day in self.signal_dates if day.year == year)
             first_seen = {
                 code: min(
-                    interval.effective_from
-                    for interval in intervals
-                    if interval.ts_code == code
+                    interval.effective_from for interval in intervals if interval.ts_code == code
                 )
                 for code in {item.ts_code for item in intervals}
             }
@@ -669,9 +662,7 @@ class CanonicalD0Materializer:
             calendar_index = {day: index for index, day in enumerate(self.trading_dates)}
             expected_names = tuple(item.name for item in d0_features())
             for day in year_signals:
-                active = {
-                    interval.ts_code for interval in intervals if _active(interval, day)
-                }
+                active = {interval.ts_code for interval in intervals if _active(interval, day)}
                 known_codes = tuple(code for code in registry_order if first_seen[code] <= day)
                 if not known_codes:
                     continue
@@ -697,9 +688,7 @@ class CanonicalD0Materializer:
                         core = build_core_features(history, signal_date=day)
                     else:
                         core = self._missing_core(code, day)
-                    basics, financial_rows, industry_rows = fundamentals.get(
-                        code, ({}, (), ())
-                    )
+                    basics, financial_rows, industry_rows = fundamentals.get(code, ({}, (), ()))
                     basic_day = next(
                         (
                             candidate
@@ -709,9 +698,7 @@ class CanonicalD0Materializer:
                         None,
                     )
                     eligible_financial = tuple(
-                        row
-                        for row in financial_rows
-                        if parse_provider_date(row["ann_date"]) < day
+                        row for row in financial_rows if parse_provider_date(row["ann_date"]) < day
                     )
                     finance = eligible_financial[-1] if eligible_financial else None
                     finance_date = (
@@ -736,9 +723,7 @@ class CanonicalD0Materializer:
                         industry_effective_date=(
                             industry.availability_date if industry is not None else None
                         ),
-                        industry_source_date=(
-                            industry.in_date if industry is not None else None
-                        ),
+                        industry_source_date=(industry.in_date if industry is not None else None),
                     )
                     feature_rows = core + factors + self._state_features(code, day, state_by_date)
                     feature_missing = per_feature_missing(
@@ -860,15 +845,9 @@ class CanonicalD0Materializer:
                 code: {row.trade_date: row for row in self._read_market(code)}
                 for code in universe_codes
             }
-            fundamentals = {
-                code: self._fundamental_sources(code) for code in universe_codes
-            }
+            fundamentals = {code: self._fundamental_sources(code) for code in universe_codes}
             opens_by_code = {
-                code: {
-                    day: row.open
-                    for day, row in rows.items()
-                    if row.open > 0
-                }
+                code: {day: row.open for day, row in rows.items() if row.open > 0}
                 for code, rows in market_by_date.items()
             }
             shards = tuple(

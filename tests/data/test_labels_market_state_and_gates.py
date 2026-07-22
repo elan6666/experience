@@ -4,6 +4,7 @@ from a_share_research.contracts import FeatureGroup, PITFeature, UniverseMembers
 from a_share_research.data import (
     D0Manifest,
     assert_shared_market_state_hashes,
+    build_index_state_rows,
     build_open_to_open_labels,
     build_shared_market_state,
 )
@@ -144,3 +145,67 @@ def test_d0_manifest_round_trip_requires_all_four_universes_and_http_notice() ->
     )
     restored = D0Manifest.from_dict(manifest.to_dict())
     assert restored.content_hash == manifest.content_hash
+
+def test_index_state_rows_produce_per_index_features() -> None:
+    """Index factors produce idx_<code>_<feature> rows with correct source_universe."""
+    dates = tuple(date(2025, 1, day) for day in range(1, 12))
+    closes_000001 = {day: 100.0 * (1.01 ** idx) for idx, day in enumerate(dates)}
+    rows = build_index_state_rows(
+        trading_dates=dates,
+        index_closes={"000001.SH": closes_000001},
+        lookback=5,
+    )
+    assert len(rows) > 0
+    names = {r.feature_name for r in rows}
+    assert "idx_000001_trend_20d" in names
+    assert "idx_000001_volatility_20d" in names
+    assert "idx_000001_return_5d" in names
+    assert all(r.source_universe == "000001.SH" for r in rows)
+
+
+def test_shared_market_state_includes_index_rows_when_closes_provided() -> None:
+    """build_shared_market_state adds index rows when index_closes is provided."""
+    dates = tuple(date(2025, 1, day) for day in range(1, 12))
+    index_close = {day: 100.0 + idx for idx, day in enumerate(dates)}
+    closes_sh = {day: 200.0 * (1.005 ** idx) for idx, day in enumerate(dates)}
+    returns = {day: {"000001.SZ": 0.01} for day in dates}
+    amount = {day: {"000001.SZ": 100.0} for day in dates}
+    turnover = {day: {"000001.SZ": 1.0} for day in dates}
+    state = build_shared_market_state(
+        trading_dates=dates,
+        index_close=index_close,
+        member_returns=returns,
+        member_amount=amount,
+        member_turnover=turnover,
+        member_industry_by_date={day: {"000001.SZ": "bank"} for day in dates},
+        eligible_member_codes_by_date={day: frozenset(("000001.SZ",)) for day in dates},
+        source_membership_hash="a" * 64,
+        lookback=5,
+        index_closes={"000001.SH": closes_sh},
+    )
+    sources = {r.source_universe for r in state.rows}
+    assert "CSI300" in sources
+    assert "000001.SH" in sources
+    idx_names = {r.feature_name for r in state.rows if r.source_universe == "000001.SH"}
+    assert "idx_000001_trend_20d" in idx_names
+
+
+def test_shared_market_state_without_index_closes_still_csi300_only() -> None:
+    """When index_closes is None, state rows remain CSI300-only (backward compat)."""
+    dates = tuple(date(2025, 1, day) for day in range(1, 8))
+    index_close = {day: 100.0 + idx for idx, day in enumerate(dates)}
+    returns = {day: {"000001.SZ": 0.01} for day in dates}
+    amount = {day: {"000001.SZ": 100.0} for day in dates}
+    turnover = {day: {"000001.SZ": 1.0} for day in dates}
+    state = build_shared_market_state(
+        trading_dates=dates,
+        index_close=index_close,
+        member_returns=returns,
+        member_amount=amount,
+        member_turnover=turnover,
+        member_industry_by_date={day: {"000001.SZ": "bank"} for day in dates},
+        eligible_member_codes_by_date={day: frozenset(("000001.SZ",)) for day in dates},
+        source_membership_hash="a" * 64,
+        lookback=2,
+    )
+    assert {r.source_universe for r in state.rows} == {"CSI300"}

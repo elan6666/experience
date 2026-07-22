@@ -22,6 +22,7 @@ from a_share_research.data.market_state import (
     IndustryCoverage,
     SharedMarketState,
     assert_shared_market_state_hashes,
+    build_index_state_rows,
     build_shared_market_state,
 )
 

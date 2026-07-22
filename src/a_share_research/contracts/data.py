@@ -189,6 +189,22 @@ class PITFeature(CanonicalModel):
             require_finite(self.value, "feature value")
 
 
+# Valid source universes for market-state rows.
+# CSI300 member-level state plus seven A-share broad indices.
+MARKET_STATE_SOURCE_UNIVERSES: frozenset[str] = frozenset(
+    {
+        "CSI300",
+        "000001.SH",  # 上证综指
+        "399001.SZ",  # 深证成指
+        "000300.SH",  # 沪深300
+        "000688.SH",  # 科创50
+        "399006.SZ",  # 创业板指
+        "000905.SH",  # 中证500
+        "000852.SH",  # 中证1000
+    }
+)
+
+
 @dataclass(frozen=True)
 class MarketState(CanonicalModel):
     SCHEMA_NAME: ClassVar[str] = "market_state"
@@ -202,8 +218,10 @@ class MarketState(CanonicalModel):
     def validate(self) -> None:
         if not self.feature_name:
             raise ContractError("market-state feature_name is required")
-        if self.source_universe != "CSI300":
-            raise ContractError("shared market state must be sourced from CSI300")
+        if self.source_universe not in MARKET_STATE_SOURCE_UNIVERSES:
+            raise ContractError(
+                "market-state source_universe must be CSI300 or a recognised A-share index"
+            )
         require_finite(self.value, "market-state value")
         if self.source_hash and len(self.source_hash) != 64:
             raise ContractError("source_hash must be SHA-256 when supplied")
