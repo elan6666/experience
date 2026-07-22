@@ -13,26 +13,69 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import date
-from pathlib import Path
 from collections.abc import Sequence
+from datetime import date, datetime, timezone
+from pathlib import Path
 
-from a_share_research.contracts import ContractError, PredictionFrame
+from a_share_research.contracts import ContractError, RunManifest
 from a_share_research.data.loaders import CanonicalDatasetLoader
 from a_share_research.experiments.tabular_runner import (
-    TabularCellRunner,
-    TabularJobSpec,
     _TRAIN_END,
     _VALIDATION_END,
-    _VALIDATION_START,
+    TabularCellRunner,
+    TabularJobSpec,
+    _default_adapter_factory,
     _information_coverage,
     _load_layout,
-    _default_adapter_factory,
 )
 from a_share_research.models.tabular import FeatureGate
+from a_share_research.models.tabular.common import TabularDiagnostics
+from a_share_research.protocol import Partition, Purpose
+from a_share_research.quality.states import ResultState
 
 _EVAL_START = date(2026, 1, 1)
 _EVAL_END = date(2026, 7, 17)
+
+
+def _legacy_evaluation_manifest(
+    *,
+    job: TabularJobSpec,
+    prepared: object,
+    layout: object,
+    diagnostics: TabularDiagnostics,
+    prediction_hash: str,
+    run_id: str,
+    started_at: datetime,
+    completed_at: datetime,
+) -> RunManifest:
+    """Create the non-rankable manifest for the closed 2026 legacy-viewed fold."""
+    d0 = getattr(prepared, "d0")
+    return RunManifest(
+        run_id=run_id,
+        model=job.model,
+        universe=job.universe,
+        information_set=job.information_set.value,
+        split=Partition.LEGACY_VIEWED,
+        purpose=Purpose.LEGACY_REPORT,
+        data_hash=d0.content_hash,
+        asset_registry_hash=job.asset_registry_hash,
+        execution_calendar_manifest_hash=d0.trading_calendar_hash,
+        feature_schema_hash=layout.stable_hash(),
+        market_state_hash=d0.market_state_hash,
+        config_hash=diagnostics.config_hash,
+        code_hash=job.code_receipt.sha256,
+        upstream_commit=job.upstream_commit,
+        seed=job.seed,
+        status=ResultState.EXPLORATORY_ONLY,
+        started_at=started_at,
+        completed_at=completed_at,
+        prediction_hash=prediction_hash,
+        formal_feature_manifest_hash=job.formal_feature_manifest_hash,
+        deviations=(
+            "2026-01-01..2026-07-17 is LEGACY_VIEWED and excluded from selection.",
+            "Tabular adapter around package-native estimator; no estimator/loss rewrite.",
+        ),
+    )
 
 
 def _load_eval_prediction_samples(
@@ -74,11 +117,15 @@ def run_eval_2026(job_spec_path: Path, output_dir: Path | None = None) -> Path:
 
     eval_prediction = _load_eval_prediction_samples(loader, gate, layout)
 
-    eval_run_id = f"eval-2026-a{job.information_set.value.lower()[-1]}-{job.universe.value.lower()}-{job.model}-seed-{job.seed:08d}"
+    eval_run_id = (
+        f"eval-2026-a{job.information_set.value.lower()[-1]}-"
+        f"{job.universe.value.lower()}-{job.model}-seed-{job.seed:08d}"
+    )
 
     if output_dir is None:
         output_dir = Path(job.output_dir).parent / eval_run_id
     output_dir.mkdir(parents=True, exist_ok=True)
+    started_at = datetime.now(timezone.utc)
 
     adapter = _default_adapter_factory(job, layout, gate, prepared.model_payload)
 
@@ -108,19 +155,18 @@ def run_eval_2026(job_spec_path: Path, output_dir: Path | None = None) -> Path:
         encoding="utf-8",
     )
 
-    manifest = {
-        "run_id": eval_run_id,
-        "model": job.model,
-        "universe": job.universe.value,
-        "information_set": job.information_set.value,
-        "partition": "LEGACY_VIEWED",
-        "purpose": "LEGACY_REPORT",
-        "prediction_hash": result.predictions.stable_hash(),
-        "source_run_id": job.run_id,
-        "status": "PASS",
-    }
+    manifest = _legacy_evaluation_manifest(
+        job=job,
+        prepared=prepared,
+        layout=layout,
+        diagnostics=result.diagnostics,
+        prediction_hash=result.predictions.stable_hash(),
+        run_id=eval_run_id,
+        started_at=started_at,
+        completed_at=datetime.now(timezone.utc),
+    )
     (output_dir / "run_manifest.json").write_text(
-        json.dumps(manifest, sort_keys=True), encoding="utf-8"
+        json.dumps(manifest.to_dict(), sort_keys=True), encoding="utf-8"
     )
 
     print(
